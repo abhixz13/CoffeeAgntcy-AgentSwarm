@@ -18,67 +18,132 @@ import argparse
 import asyncio
 import os
 
-from uvicorn import Config, Server
-from supervisor.graph.graph import SupervisorGraph
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from supervisor.api.routes import stateless_runs
+from supervisor.graph.graph import SupervisorGraph
+from uvicorn import Config, Server
 
 
 def create_app() -> FastAPI:
-  app = FastAPI(
-    title="Acorda Agent Supervisor",
-    openapi_url="/api/v1/openapi.json",
-    version="0.1.0",
-    description="Acorda Agent Supervisor API",
-  )
-  app.include_router(stateless_runs.router, prefix="/api/v1")
-  app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["*"],
-  )
-  return app
+    """
+    Creates and configures a FastAPI application instance.
+
+    Returns:
+        FastAPI: An instance of the FastAPI application with configured routes,
+        middleware, and metadata.
+
+    The application includes:
+    - A title, version, and description for the API.
+    - OpenAPI documentation available at `/api/v1/openapi.json`.
+    - A router for stateless runs with the prefix `/api/v1`.
+    - CORS middleware allowing all origins, credentials, methods, headers, and exposing headers.
+    """
+    app = FastAPI(
+        title="Acorda Agent Supervisor",
+        openapi_url="/api/v1/openapi.json",
+        version="0.1.0",
+        description="Acorda Agent Supervisor API",
+    )
+    app.include_router(stateless_runs.router, prefix="/api/v1")
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+        expose_headers=["*"],
+    )
+    return app
 
 
 def run_server():
-  port = int(os.getenv("ACORDA_AGENT_PORT", "8125"))
-  config = Config(
-    app=create_app(),
-    host="0.0.0.0",
-    port=port,
-    log_level="info",
-  )
-  server = Server(config)
-  if asyncio.get_event_loop().is_running():
-    asyncio.ensure_future(server.serve())
-  else:
-    asyncio.run(server.serve())
+    """
+    Starts the server for the application.
+
+    This function initializes and runs an ASGI server using the specified
+    configuration. The server's host and port are determined by the environment
+    variables `ACORDA_AGENT_HOST` and `ACORDA_AGENT_PORT`, with default values
+    of "0.0.0.0" and 8125, respectively. If an event loop is already running,
+    the server is started as a background task; otherwise, it is run in the
+    current thread.
+
+    Environment Variables:
+        ACORDA_AGENT_PORT (str): The port number on which the server will run.
+                                 Defaults to "8125".
+        ACORDA_AGENT_HOST (str): The host address on which the server will run.
+                                 Defaults to "0.0.0.0".
+
+    Raises:
+        Any exceptions raised during server initialization or execution.
+
+    Note:
+        This function uses `asyncio.run` if no event loop is running, which
+        should not be called if the function is invoked within an existing
+        asynchronous context.
+    """
+    port = int(os.getenv("ACORDA_AGENT_PORT", "8125"))
+    host = os.getenv("ACORDA_AGENT_HOST", "0.0.0.0")
+    config = Config(
+        app=create_app(),
+        host=host,
+        port=port,
+        log_level="info",
+    )
+    server = Server(config)
+    try:
+        if asyncio.get_event_loop().is_running():
+            asyncio.ensure_future(server.serve())
+        else:
+            asyncio.run(server.serve())
+    except (OSError, RuntimeError) as e:
+        print(f"An error occurred while running the server: {e}")
 
 
 def run_graph():
-  supervisor_graph = SupervisorGraph()
-  user_prompt = "Sample user input for SupervisorGraph"
-  result, _ = supervisor_graph.serve(user_prompt)
-  print("SupervisorGraph result:", result)
+    """
+    Executes the SupervisorGraph by initializing it, providing a sample user input,
+    and printing the result.
+
+    This function creates an instance of the SupervisorGraph class, simulates a user
+    input prompt, and calls the `serve` method of the SupervisorGraph to process the
+    input. The result of the operation is then printed to the console.
+
+    Returns:
+        None
+    """
+    supervisor_graph = SupervisorGraph()
+    user_prompt = "Sample user input for SupervisorGraph"
+    result, _ = supervisor_graph.serve(user_prompt)
+    print("SupervisorGraph result:", result)
 
 
 def main():
-  parser = argparse.ArgumentParser(description="Run Acorda Agent Supervisor")
-  parser.add_argument(
-    "--server",
-    action="store_true",
-    help="Run the FastAPI server. If not provided, the SupervisorGraph will be invoked directly.",
-  )
-  args = parser.parse_args()
+    """
+    Main entry point for the Acorda Agent Supervisor application.
+    This function parses command-line arguments to determine the mode of operation.
+    It supports two modes:
+    1. Running a FastAPI server (`--server` flag).
+    2. Invoking the SupervisorGraph directly (default behavior if `--server` is not provided).
+    Command-line Arguments:
+        --server (optional): If provided, the FastAPI server will be started. 
+                             Otherwise, the SupervisorGraph will be executed.
+    Returns:
+        None
+    """
+    parser = argparse.ArgumentParser(description="Run Acorda Agent Supervisor")
+    parser.add_argument(
+        "--server",
+        action="store_true",
+        help="Run the FastAPI server. If not provided, the SupervisorGraph will be invoked directly.",
+    )
+    args = parser.parse_args()
 
-  if args.server:
-    run_server()
-  else:
-    run_graph()
+    if args.server:
+        run_server()
+    else:
+        run_graph()
+
 
 if __name__ == "__main__":
-  main()
+    main()

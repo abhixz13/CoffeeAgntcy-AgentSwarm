@@ -27,58 +27,56 @@ from supervisor.graph.router import supervisor_node
 
 
 class SupervisorGraph:
-  def __init__(self):
-    """
-    Initialize the SupervisorGraph as a LangGraph.
-    """
-    self.graph = self.build_graph()
+    def __init__(self):
+        """
+        Initialize the SupervisorGraph as a LangGraph.
+        """
+        self.graph = self.build_graph()
 
-  def build_graph(self):
-    """
-    Build a LangGraph instance of the Supervisor graph.
+    def build_graph(self):
+        """
+        Build a LangGraph instance of the Supervisor graph.
 
-    Returns:
-      CompiledGraph: A compiled LangGraph instance.
-    """
-    # Create the supervisor node
-    graph = StateGraph(AgentState)
-    graph.add_edge(START, "supervisor")
-    graph.add_node("supervisor", supervisor_node)
-    graph.add_node("node_agp_broadcast", node_remote_agp)
-    graph.add_edge("node_agp_broadcast", END)
+        Returns:
+          CompiledGraph: A compiled LangGraph instance.
+        """
+        # Create the supervisor node
+        graph = StateGraph(AgentState)
+        graph.add_edge(START, "supervisor")
+        graph.add_node("supervisor", supervisor_node)
+        graph.add_node("node_agp_broadcast", node_remote_agp)
+        graph.add_edge("node_agp_broadcast", END)
 
-    checkpointer = InMemorySaver()
-    return graph.compile(checkpointer=checkpointer)
+        checkpointer = InMemorySaver()
+        return graph.compile(checkpointer=checkpointer)
 
-  def get_graph(self):
-    return self.graph
+    def get_graph(self):
+        return self.graph
 
-  def serve(self, user_prompt: str):
-    """
-    Runs the LangGraph for supervisor operations.
+    def serve(self, user_prompt: str):
+        """
+        Runs the LangGraph for supervisor operations.
 
-    Args:
-      user_prompt str: user_prompt to serve.
+        Args:
+          user_prompt str: user_prompt to serve.
 
-    Returns:
-      dict: Output data containing `agent_output`.
-    """
-    try:
-      logging.info("got user prompt: " + user_prompt)
-      result = self.graph.invoke({
-        "messages": [
-          {
-            "role": "user",
-            "content": user_prompt
-          }
-        ],
-      }, {"configurable": {"thread_id": uuid.uuid4()}})
+        Returns:
+          dict: Output data containing `agent_output`.
+        """
+        try:
+            logging.info("got user prompt: " + user_prompt)
+            result = self.graph.invoke(
+                {
+                    "messages": [{"role": "user", "content": user_prompt}],
+                },
+                {"configurable": {"thread_id": uuid.uuid4()}},
+            )
 
-      if logging.getLogger().isEnabledFor(logging.DEBUG):
-        for m in result["messages"]:
-          m.pretty_print()
+            if logging.getLogger().isEnabledFor(logging.DEBUG):
+                for m in result["messages"]:
+                    m.pretty_print()
 
-      return result["messages"][-1].content, result
+            return result["messages"][-1].content, result
 
-    except Exception as e:
-      raise Exception("operation failed: " + str(e))
+        except Exception as e:
+            raise Exception("operation failed: " + str(e))
