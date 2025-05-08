@@ -14,186 +14,70 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-import json
 import logging
-import logging.config
+from logging.handlers import RotatingFileHandler
 import os
-import traceback
 from pathlib import Path
-from typing import Dict
-
+from pythonjsonlogger.json import JsonFormatter
 import coloredlogs
 
+coloredlogs.install(level="INFO")
+
 if os.getenv("HTTP_CLIENT_DEBUG", "0") == "1":
-  import http.client as http_client
+    import http.client as http_client
 
-  http_client.HTTPConnection.debuglevel = 1
-
-
-class JSONFormatter(logging.Formatter):
-  """
-  Custom logging formatter that outputs logs in structured JSON format.
-
-  - Includes timestamp, log level, message, module, function, and line number.
-  - Captures exceptions with stack trace when applicable.
-  """
-
-  def format(self, record: logging.LogRecord) -> str:
-    log_data = {
-      "timestamp": self.formatTime(record), # Corrected: Uses default ISO 8601 format
-      "level": record.levelname,
-      "message": record.getMessage(),
-      "module": record.module,
-      "function": record.funcName,
-      "line": record.lineno,
-      "logger": record.name,
-      "pid": record.process,
-    }
-
-    # Capture exception details if they exist
-    if record.exc_info:
-      log_data["error"] = {
-        "type": str(record.exc_info[0]),
-        "message": str(record.exc_info[1]),
-        "stack_trace": traceback.format_exc(),
-      }
-
-    return json.dumps(log_data)
+    http_client.HTTPConnection.debuglevel = 1
 
 
 def get_log_dir() -> Path:
-  """
-  Returns the log directory path and ensures it exists.
-
-  Returns:
-    Path: The path to the logs directory (app/logs/)
-  """
-  log_dir = Path(__file__).parent.parent / "logs"
-  log_dir.mkdir(parents=True, exist_ok=True)
-  return log_dir
-
-
-def get_log_file() -> Path:
-  """
-  Returns the log file path and ensures it is removed on every startup.
-
-  Returns:
-    Path: The path to the log file (app/logs/remote_graphs.log)
-  """
-
-  log_file = get_log_dir() / "remote_graphs.log"
-
-  # Remove old log file on startup to ensure fresh logs
-  if log_file.exists():
-    log_file.unlink()
-  return log_file
+    """Returns the log directory path and ensures it exists."""
+    log_dir = Path.cwd() / "logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    return log_dir
 
 
 def get_log_level() -> str:
-  """
-  Retrieves the log level from environment variables.
-
-  Defaults to "INFO" if LOG_LEVEL is not set.
-
-  Returns:
-    str: Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-  """
-  return os.getenv("LOG_LEVEL", "INFO").upper()
+    """Retrieves the log level from environment variables (defaults to INFO)."""
+    return os.getenv("LOG_LEVEL", "INFO").upper()
 
 
-def get_logging_config(log_file: Path, log_level: str) -> Dict:
-  """
-  Generates the logging configuration dictionary with JSON or colored formatting.
+def configure_logging(log_filename: str = "ap_rest_client.log") -> logging.Logger:
+    """
+    Configures structured JSON logging with rotation.
 
-  Args:
-    log_file (Path): Path to the log file.
-    log_level (str): Logging level (DEBUG, INFO, etc.).
+    Logs to both console and a rotating file handler.
+    The log level is determined by the LOG_LEVEL environment variable.
 
-  Returns:
-    dict: Logging configuration dictionary.
-  """
-  formatter = os.getenv("LOG_FORMATTER", "colored").lower()
-  handlers = {
-    "console": {
-      "level": log_level,
-      "class": "logging.StreamHandler",
-      "formatter": formatter if formatter in ["json", "colored"] else "colored",
-    }
-  }
+    Parameters:
+        log_filename (str): Name of the log file.
+    """
 
-  if log_file and os.getenv("LOG_TO_FILE", "0") == "1":
-    handlers["file"] = {
-      "level": log_level,
-      "class": "logging.FileHandler",
-      "filename": str(log_file),
-      "formatter": "json",
-    }
+    log_dir = get_log_dir()
+    log_file = log_dir / log_filename
+    log_level: str = get_log_level()
 
-  return {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-      "json": {
-        "()": JSONFormatter,  # Use custom JSON formatter
-      },
-      "colored": {
-        "format": "%(asctime)s [%(name)s] [%(levelname)s] [%(funcName)s] %(message)s",
-      },
-    },
-    "handlers": handlers,
-    "loggers": {
-      "uvicorn": {
-        "handlers": list(handlers.keys()),
-        "level": log_level,
-        "propagate": False,
-      },
-      "fastapi": {
-        "handlers": list(handlers.keys()),
-        "level": log_level,
-        "propagate": False,
-      },
-      "app": {
-        "handlers": list(handlers.keys()),
-        "level": log_level,
-        "propagate": False,
-      },
-      "remote_graphs": {  # Keep for compatibility
-        "handlers": list(handlers.keys()),
-        "level": log_level,
-        "propagate": False,
-      },
-      "requests.packages.urllib3": {
-        "handlers": ["console"],
-        "level": log_level,
-        "propagate": True,
-      },
-    },
-    "root": {"handlers": list(handlers.keys()), "level": log_level},
-  }
+    logger = logging.getLogger()
+    logger.setLevel(log_level)
 
+    formatter = JsonFormatter(
+        "{asctime} {levelname} {pathname} {module} {funcName} {message} {exc_info}",
+        style="{",
+    )
 
-def configure_logging() -> None:
-  """
-  Configures logging for the application.
-  This function performs the following tasks:
-  - Retrieves the log file path and log level from configuration.
-  - Sets up logging using a dictionary-based configuration.
-  - Installs coloredlogs for enhanced console output with a specific format.
-  - Initializes a logger for the application and logs a message to confirm logging setup.
-  Returns:
-    None
-  """
+    # ✅ Log to Console
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(formatter)
+    logger.addHandler(stream_handler)
 
-  log_file = get_log_file() if os.getenv("LOG_TO_FILE", "0") == "1" else None
-  log_level = get_log_level()
-  logging_config = get_logging_config(log_file, log_level)
+    # ✅ Log to File with Rotation
+    file_handler = RotatingFileHandler(
+        log_file, mode="a", maxBytes=5 * 1024 * 1024, backupCount=5, encoding="utf-8"
+    )
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
 
-  logging.config.dictConfig(logging_config)
+    logger.info(
+        "Logging initialized with rotation.", extra={"log_destination": str(log_file)}
+    )
 
-  # Install coloredlogs for console output
-  coloredlogs.install(level=log_level, fmt="%(asctime)s [%(name)s] [%(levelname)s] [%(funcName)s] %(message)s")
-
-  logger = logging.getLogger("agntcy_agents_common")
-  logger.info("Logging has been configured successfully.")
-
-configure_logging()
+    return logger

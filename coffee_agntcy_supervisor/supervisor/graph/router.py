@@ -22,21 +22,23 @@ import logging
 
 SAMPLE_RESPONSE = "Need 100 tons of Arabica roast from Vietnam region by December 15"
 
+
 class Router(TypedDict):
-  next: Annotated[Literal["node_agp_broadcast", "FINISH"], ...]
-  reasoning: Annotated[str, ...]
+    next: Annotated[Literal["node_agp_broadcast", "FINISH"], ...]
+    reasoning: Annotated[str, ...]
+
 
 def supervisor_node(state: AgentState) -> Command:
-  response = Router(
-    next="node_agp_broadcast",
-    reasoning=SAMPLE_RESPONSE,
-  )
+    response = Router(
+        next="node_agp_broadcast",
+        reasoning=SAMPLE_RESPONSE,
+    )
 
-  goto = response["next"]
+    goto = response["next"]
 
-  if goto == "FINISH":
-    logging.info("FINISH")
-    goto = END
+    if goto == "FINISH":
+        logging.info("FINISH")
+        goto = END
 
-  logging.info(f"goto: {goto}")
-  return Command(goto=goto, update={"next": goto, "reasoning": response["reasoning"]})
+    logging.info(f"goto: {goto}")
+    return Command(goto=goto, update={"next": goto, "reasoning": response["reasoning"]})

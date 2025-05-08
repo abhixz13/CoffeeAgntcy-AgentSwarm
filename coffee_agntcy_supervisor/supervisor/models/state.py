@@ -19,12 +19,15 @@ from typing import Optional, TypedDict
 
 from pydantic import BaseModel, Field
 
+
 class ConfigSchema(TypedDict):
     pass
+
 
 class MsgType(Enum):
     human = "human"
     assistant = "assistant"
+
 
 class Message(BaseModel):
     type: MsgType = Field(
@@ -33,11 +36,14 @@ class Message(BaseModel):
     )
     content: str = Field(..., description="the content of the message")
 
+
 class InputState(BaseModel):
     messages: Optional[list[Message]] = None
 
+
 class OutputState(BaseModel):
     messages: Optional[list[Message]] = None
+
 
 class AgentState(BaseModel):
     agent_input: InputState
