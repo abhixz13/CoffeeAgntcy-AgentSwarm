@@ -1,7 +1,0 @@
-{
-    "dependencies": ["."],
-    "graphs": {
-        "remote_graphs": "./client.py:build_graph"
-    },
-    "env": "../../.env"
-}
