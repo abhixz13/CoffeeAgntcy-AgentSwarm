@@ -27,8 +27,6 @@ Welcome to Acorda ...
 ### Architecture
 Tech diagram of agents and where IOA fits in.
 
-[![architecture](assets/acorda.jpg)]()
-
 ## Getting Started
 Provide a comprehensive guide, from install, run-demo, contribute, deploy
 
