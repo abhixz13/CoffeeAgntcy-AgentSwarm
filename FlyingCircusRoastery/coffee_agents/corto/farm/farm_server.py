@@ -6,27 +6,30 @@ from a2a.types import (AgentAuthentication, AgentCapabilities, AgentCard,
                        AgentSkill)
 
 from agent_executor import FarmAgentExecutor
+from config.config import FARM_AGENT_HOST, FARM_AGENT_PORT
 
-
-@click.command()
-@click.option('--host', 'host', default='localhost')
-@click.option('--port', 'port', default=9999)
 def main(host: str, port: int):
+    """Run the A2A server with the Farm Agent."""
     skill = AgentSkill(
-        id='coffee_farm',
-        name='Coffee Farm Message',
-        description='Handles and echoes coffee farm-related user input.',
-        tags=['coffee', 'farm', 'echo', 'message'],
-        examples=['plant arabica', 'status of coffee crops'],
-    )
+        id="estimate_flavor",
+        name="Estimate Flavor Profile",
+        description="Analyzes a natural language prompt and returns the expected flavor profile for a coffee-growing region and season.",
+        tags=["coffee", "flavor", "farm", "profile", "nlp"],
+        examples=[
+            "What flavors can I expect from coffee in Huila during harvest?",
+            "Describe the taste of beans grown in Sidamo in the dry season",
+            "How does Yirgacheffe coffee taste in wet season?"
+        ]
+    )   
 
     agent_card = AgentCard(
-        name='Coffee Farm Agent Server',
-        description='An agent server that handles coffee farm-related messages and echoes user input.',
+        name='Coffee Farm Flavor Agent',
+        id='flavor-profile-farm-agent',
+        description='An AI agent that estimates the flavor profile of coffee beans using growing conditions like season and altitude.',
         url=f'http://{host}:{port}/',
         version='1.0.0',
-        defaultInputModes=['text'],
-        defaultOutputModes=['text'],
+        defaultInputModes=["text/plain"],
+        defaultOutputModes=["text/plain"],
         capabilities=AgentCapabilities(),
         skills=[skill],
         authentication=AgentAuthentication(schemes=['public']),
@@ -40,4 +43,4 @@ def main(host: str, port: int):
     server.start(host=host, port=port)
 
 if __name__ == '__main__':
-    main()
+    main(FARM_AGENT_HOST, FARM_AGENT_PORT)
