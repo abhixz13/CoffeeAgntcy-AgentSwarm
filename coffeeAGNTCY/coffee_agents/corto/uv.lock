@@ -220,11 +220,13 @@ dependencies = [
     { name = "click" },
     { name = "coloredlogs" },
     { name = "dotenv" },
+    { name = "fastapi" },
     { name = "httpx" },
     { name = "langchain-anthropic" },
     { name = "langchain-google-genai" },
     { name = "langchain-openai" },
     { name = "langgraph" },
+    { name = "langgraph-supervisor" },
     { name = "pydantic" },
     { name = "python-dotenv" },
 ]
@@ -251,12 +253,14 @@ requires-dist = [
     { name = "coloredlogs", specifier = ">=15.0.1" },
     { name = "coloredlogs", marker = "extra == 'dev'", specifier = ">=15.0.1,<16" },
     { name = "dotenv", specifier = ">=0.9.9" },
+    { name = "fastapi", specifier = ">=0.115.12" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "langchain-anthropic", specifier = ">=0.3.13" },
     { name = "langchain-google-genai", specifier = ">=2.1.4" },
     { name = "langchain-openai", specifier = ">=0.3.16" },
     { name = "langchain-openai", marker = "extra == 'dev'", specifier = ">=0.3.14,<0.4" },
     { name = "langgraph", specifier = ">=0.4.1" },
+    { name = "langgraph-supervisor", specifier = ">=0.0.26" },
     { name = "openai", marker = "extra == 'dev'", specifier = ">=1.60.2,<2" },
     { name = "pydantic", specifier = ">=2.11.4" },
     { name = "pytest", marker = "extra == 'dev'", specifier = "~=7.0" },
@@ -337,6 +341,20 @@ dependencies = [
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b2/b7/545d2c10c1fc15e48653c91efde329a790f2eecfbbf2bd16003b5db2bab0/dotenv-0.9.9-py2.py3-none-any.whl", hash = "sha256:29cf74a087b31dafdb5a446b6d7e11cbce8ed2741540e2339c69fbef92c94ce9", size = 1892, upload-time = "2025-02-19T22:15:01.647Z" },
+]
+
+[[package]]
+name = "fastapi"
+version = "0.115.12"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pydantic" },
+    { name = "starlette" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f4/55/ae499352d82338331ca1e28c7f4a63bfd09479b16395dce38cf50a39e2c2/fastapi-0.115.12.tar.gz", hash = "sha256:1e2c2a2646905f9e83d32f04a3f86aff4a286669c6c950ca95b5fd68c2602681", size = 295236, upload-time = "2025-03-23T22:55:43.822Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/50/b3/b51f09c2ba432a576fe63758bddc81f78f0c6309d9e5c10d194313bf021e/fastapi-0.115.12-py3-none-any.whl", hash = "sha256:e94613d6c05e27be7ffebdd6ea5f388112e5e430c8f7d6494a9d1d88d43e814d", size = 95164, upload-time = "2025-03-23T22:55:42.101Z" },
 ]
 
 [[package]]
@@ -785,6 +803,20 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/06/78/4ca0603240332be5fc8ebbb9bc418896310643bef32e3319a311fab37e4c/langgraph_sdk-0.1.69.tar.gz", hash = "sha256:2e85d73b78a03f9606d0fafd62048b3060371149f6f9e61f07f087fd56c766fa", size = 45343, upload-time = "2025-05-13T02:35:13.52Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b0/e6/8e82a0373e233392d83ae37f473c9799c536b307322f0caf49a59bce9522/langgraph_sdk-0.1.69-py3-none-any.whl", hash = "sha256:0ed117bcdf67285a17c57f6265f1d94f2dbd71346cf48a8e1a5fa25e523eb6b8", size = 48905, upload-time = "2025-05-13T02:35:12.062Z" },
+]
+
+[[package]]
+name = "langgraph-supervisor"
+version = "0.0.26"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "langchain-core" },
+    { name = "langgraph" },
+    { name = "langgraph-prebuilt" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/cc/5f/505edc02615a01ee84331a2f7695b8e414449207416c644ebd3a1306ab56/langgraph_supervisor-0.0.26.tar.gz", hash = "sha256:a77cd84ee59206567d0a931107ef7b7351cdd00828e62175a5d2a6ba54d9219f", size = 20237, upload-time = "2025-05-27T17:36:13.534Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/55/38/4ac5336357c40957a8c7b1eeb5eeadbef8912e33115e729226bd1692403f/langgraph_supervisor-0.0.26-py3-none-any.whl", hash = "sha256:d0deadf05f36fa3c282e5a412b50e46a53fee0abcf0b8a14d4e86306e51da1be", size = 15215, upload-time = "2025-05-27T17:36:12.219Z" },
 ]
 
 [[package]]
