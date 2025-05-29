@@ -1,43 +1,26 @@
-import click
-import uvicorn
+from uvicorn import Config, Server
+import asyncio
+import argparse
 
-#from a2a.server import A2AServer
+from gateway_sdk.factory import TransportTypes
+from gateway_sdk.factory import GatewayFactory
+
 from a2a.server.apps import A2AStarletteApplication
-#from a2a.server.request_handlers import DefaultA2ARequestHandler
 from a2a.server.tasks import InMemoryTaskStore
 from a2a.server.request_handlers import DefaultRequestHandler
-from a2a.types import (AgentCapabilities, AgentCard,
-                       AgentSkill)
 
 from agent_executor import FarmAgentExecutor
 from config.config import FARM_AGENT_HOST, FARM_AGENT_PORT
+from config.config import DEFAULT_MESSAGE_TRANSPORT, TRANSPORT_SERVER_ENDPOINT
+from card import AGENT_CARD
 
-def main(host: str, port: int):
+# Initialize a multi-protocol, multi-transport gateway factory.
+factory = GatewayFactory()
+
+async def main():
     """Run the A2A server with the Farm Agent."""
-    skill = AgentSkill(
-        id="estimate_flavor",
-        name="Estimate Flavor Profile",
-        description="Analyzes a natural language prompt and returns the expected flavor profile for a coffee-growing region and/or season.",
-        tags=["coffee", "flavor", "farm"],
-        examples=[
-            "What flavors can I expect from coffee in Huila during harvest?",
-            "Describe the taste of beans grown in Sidamo in the dry season",
-            "How does Yirgacheffe coffee taste?"
-        ]
-    )   
 
-    agent_card = AgentCard(
-        name='Coffee Farm Flavor Agent',
-        id='flavor-profile-farm-agent',
-        description='An AI agent that estimates the flavor profile of coffee beans using growing conditions like season and altitude.',
-        url=f'http://{host}:{port}/',
-        version='1.0.0',
-        defaultInputModes=["text"],
-        defaultOutputModes=["text"],
-        capabilities=AgentCapabilities(streaming=True),
-        skills=[skill],
-        supportsAuthenticatedExtendedCard=False,
-    )
+    AGENT_CARD.url = f'http://{FARM_AGENT_HOST}:{FARM_AGENT_PORT}/'
 
     request_handler = DefaultRequestHandler(
         agent_executor=FarmAgentExecutor(),
@@ -45,10 +28,25 @@ def main(host: str, port: int):
     )
 
     server = A2AStarletteApplication(
-        agent_card=agent_card, http_handler=request_handler
+        agent_card=AGENT_CARD, http_handler=request_handler
     )
 
-    uvicorn.run(server.build(), host=host, port=port)
+    if DEFAULT_MESSAGE_TRANSPORT == "A2A":
+        config = Config(app=server.build(), host=FARM_AGENT_HOST, port=FARM_AGENT_PORT, loop="asyncio")
+        userver = Server(config)
+        await userver.serve()
+    else:
+        transport = factory.create_transport(
+            transport_type=TransportTypes[DEFAULT_MESSAGE_TRANSPORT],
+            server_endpoint=TRANSPORT_SERVER_ENDPOINT,
+        )
+        bridge = factory.create_bridge(server, transport=transport)
+        await bridge.start()
 
 if __name__ == '__main__':
-    main(FARM_AGENT_HOST, FARM_AGENT_PORT)
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("\nShutting down gracefully on keyboard interrupt.")
+    except Exception as e:
+        print(f"Error occurred: {e}")
