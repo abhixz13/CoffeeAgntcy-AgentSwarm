@@ -13,12 +13,12 @@ def main(host: str, port: int):
     skill = AgentSkill(
         id="estimate_flavor",
         name="Estimate Flavor Profile",
-        description="Analyzes a natural language prompt and returns the expected flavor profile for a coffee-growing region and season.",
-        tags=["coffee", "flavor", "farm", "profile", "nlp"],
+        description="Analyzes a natural language prompt and returns the expected flavor profile for a coffee-growing region and/or season.",
+        tags=["coffee", "flavor", "farm"],
         examples=[
             "What flavors can I expect from coffee in Huila during harvest?",
             "Describe the taste of beans grown in Sidamo in the dry season",
-            "How does Yirgacheffe coffee taste in wet season?"
+            "How does Yirgacheffe coffee taste?"
         ]
     )   
 

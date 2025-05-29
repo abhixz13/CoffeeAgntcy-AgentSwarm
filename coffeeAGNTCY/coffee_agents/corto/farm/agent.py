@@ -1,12 +1,10 @@
-import os
+import logging
 from typing import TypedDict
 
-from cisco_outshift_agent_utils.llm_factory import LLMFactory
 from langgraph.graph import END, START, StateGraph
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from config.config import LLM_PROVIDER
-
+from common.llm import get_llm
 
 class State(TypedDict):
     prompt: str
@@ -24,6 +22,14 @@ class FarmAgent:
         self._agent = graph_builder.compile()
 
     async def flavor_node(self, state: State):
+        """
+        Generate a flavor profile for coffee beans based on user input by connecting to an LLM.
+        
+        Args:
+            state (State): The current state containing the user prompt.
+        Returns:
+            dict: A dictionary containing the flavor notes or an error message if the input is invalid.        
+        """
         user_prompt = state.get("prompt")
 
         system_prompt = (
@@ -34,17 +40,16 @@ class FarmAgent:
             "2. Based on those, describe the expected **flavor profile** of the coffee grown there.\n"
             "3. Respond with only a brief, expressive flavor profile (1–3 sentences). "
             "Use tasting terminology like acidity, body, aroma, and finish.\n"
-            # "If no meaningful location or season is found, respond with an empty string." # Commented out to allow for error handling
+            "Respond with an empty response if no valid location or season is found. Do not include quotes or any placeholder."
         )
 
-        llm = LLMFactory(provider=LLM_PROVIDER).get_llm()
         messages = [
             SystemMessage(content=system_prompt),
             HumanMessage(content=user_prompt)
         ]
-        response = llm.invoke(messages)
+        response = get_llm().invoke(messages)
         flavor_notes = response.content
-        if flavor_notes == "":
+        if not flavor_notes.strip():
             return {
                 "error_type": "invalid_input",
                 "error_message": "Could not confidently extract coffee farm context from user prompt."
@@ -53,4 +58,11 @@ class FarmAgent:
         return {"flavor_notes": flavor_notes}
 
     async def ainvoke(self, input: str) -> dict:
+        """
+        Asynchronously invoke the agent with the given input.
+        Args:
+            input (str): The user input to process.
+        Returns:
+            dict: The result of the agent's processing, containing flavor notes or an error message.
+        """
         return await self._agent.ainvoke({"prompt": input})

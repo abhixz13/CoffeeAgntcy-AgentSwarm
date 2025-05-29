@@ -37,9 +37,10 @@ brew install uv
     cp .env.example .env
     ```
 
-    Populate the `.env` file with your OpenAI or Azure OpenAI credentials. For example:
-
-    ```env
+    Add your LLM provider (OpenAI or Azure OpenAI) and associated credentials to the .env file. For example:
+ 
+   ```env
+    LLM_PROVIDER=openai
     OPENAI_API_KEY=your_openai_api_key
     OPENAI_MODEL=gpt-4o
     ```
@@ -47,6 +48,7 @@ brew install uv
    Or for Azure OpenAI:
 
     ```env
+    LLM_PROVIDER=azure
     AZURE_OPENAI_ENDPOINT=https://your-azure-resource.openai.azure.com/
     AZURE_OPENAI_DEPLOYMENT=gpt-4-prod
     AZURE_OPENAI_API_KEY=your_azure_api_key
@@ -67,16 +69,22 @@ uv run python farm/farm_server.py
 
 The `farm_server` listens for requests from the `exchange` and processes them using LangGraph. It generates flavor profiles based on user inputs such as location and season.
 
-### Step 2: Run the Exchange Server
+### Step 2: Run the Exchange
 Start the `exchange`, which acts as an A2A client, by running:
 
 ```sh
 uv run python exchange/main.py
 ```
 
-Send curl requests to the `exchange` to interact with the `farm_server`. For example, you can send a request to generate a coffee flavor profile:
-```sh
+This starts a FastAPI server that processes user prompts that are sent to a LangGraph supervisor that facilitates worker agent delegation. The A2A client is registered as a worker agent. If a prompt does not match any worker, the supervisor responds politely with a refusal message.
+
+To invoke the exchange, use the /agent/prompt endpoint to send a human-readable prompt to request information about a location's coffee flavor profiles for a specific season. For example:
+```bash
 curl -X POST http://127.0.0.1:8000/agent/prompt \
--H "Content-Type: application/json" \
--d '{"prompt": "Flavor notes of Ethiopian coffees in the spring"}'
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "What are the flavor notes of Colombian coffee in winter?"
+  }'
 ```
+
+The `exchange` sends user inputs to the `farm_server` and displays the generated flavor profiles. It interacts with the `farm_server` through A2A communication protocols.
