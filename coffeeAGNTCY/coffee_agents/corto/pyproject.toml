@@ -19,6 +19,11 @@ dependencies = [
     "langgraph-supervisor>=0.0.26",
     "pydantic>=2.11.4",
     "python-dotenv>=1.1.0",
+    "fastapi",
+    "httpx",
+    "requests",
+    "starlette",
+    "uvicorn",
 ]
 
 [project.optional-dependencies]

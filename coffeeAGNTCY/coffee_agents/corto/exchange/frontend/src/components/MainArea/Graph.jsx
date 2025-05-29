@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import {
     ReactFlow,
     ReactFlowProvider,
@@ -41,7 +41,16 @@ const initialNodes = [
     {
         id: NODE_IDS.SOMMELIER,
         type: 'output',
-        data: { label: 'Sommelier' },
+        data: {
+            label: (
+                <div>
+                    Sommelier
+                    <div style={{ fontSize: '.65em' }}>
+                        (Q Grader)
+                    </div>
+                </div>
+            )
+        },
         position: { x: 250, y: 250 },
         style: {
             fontFamily: "'CiscoSansTT'",
@@ -74,8 +83,8 @@ const initialEdges = [
 ];
 
 const Graph = ({ buttonClicked, setButtonClicked }) => {
-    const [nodes, setNodes] = useNodesState(initialNodes);
-    const [edges, setEdges] = useEdgesState(initialEdges);
+    const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+    const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
     useEffect(() => {
         if (!buttonClicked) return;
@@ -94,6 +103,7 @@ const Graph = ({ buttonClicked, setButtonClicked }) => {
                                 backgroundColor: 'rgba(0, 255, 0, 0.3)',
                                 border: '1px solid #00FF00',
                             },
+                            position: node.position, // Ensure position remains unchanged
                         }
                         : node
                 )
@@ -101,7 +111,13 @@ const Graph = ({ buttonClicked, setButtonClicked }) => {
             await delay(DELAY_DURATION);
 
             // Reset to initial nodes
-            setNodes(initialNodes);
+            setNodes((nds) =>
+                nds.map((node) => ({
+                    ...node,
+                    style: initialNodes.find((n) => n.id === node.id).style,
+                    position: node.position, // Ensure position remains unchanged
+                }))
+            );
             await delay(DELAY_DURATION);
 
             // Change edge to green
@@ -134,6 +150,7 @@ const Graph = ({ buttonClicked, setButtonClicked }) => {
                                 backgroundColor: 'rgba(0, 255, 0, 0.3)',
                                 border: '1px solid #00FF00',
                             },
+                            position: node.position, // Ensure position remains unchanged
                         }
                         : node
                 )
@@ -141,7 +158,13 @@ const Graph = ({ buttonClicked, setButtonClicked }) => {
             await delay(DELAY_DURATION);
 
             // Reset to initial nodes
-            setNodes(initialNodes);
+            setNodes((nds) =>
+                nds.map((node) => ({
+                    ...node,
+                    style: initialNodes.find((n) => n.id === node.id).style,
+                    position: node.position, // Ensure position remains unchanged
+                }))
+            );
 
             // Reset buttonClicked state
             setButtonClicked(false);
@@ -156,8 +179,10 @@ const Graph = ({ buttonClicked, setButtonClicked }) => {
                 <ReactFlow
                     nodes={nodes}
                     edges={edges}
-                    fitView
+                    onNodesChange={onNodesChange}
+                    onEdgesChange={onEdgesChange}
                     proOptions={proOptions}
+                    fitView
                 >
                     <Controls />
                 </ReactFlow>

@@ -22,37 +22,33 @@ function MessageInput({ messages, setMessages, setButtonClicked }) {
     setMessages(updatedMessages);
     setContent('');
     setLoading(true);
-    setButtonClicked(true); // Update buttonClicked state
+    setButtonClicked(true);
 
     try {
-      const resp = await axios.post('http://localhost:8000/agent/prompt', {
+      const apiUrl = import.meta.env.VITE_EXCHANGE_APP_API_URL || "http://0.0.0.0:8000";
+      console.log("API URL:", apiUrl);
+      const resp = await axios.post(`${apiUrl}/agent/prompt`, {
         prompt: content,
       });
 
-      const res = {
-        data: {
-          messages: [
-            ...updatedMessages,
-            { role: 'assistant', content: resp.data.response },
-          ],
-        },
-      };
-
       const aiReply = {
         role: 'assistant',
-        content: res.data?.messages?.at(-1)?.content || "No content received.",
+        content: resp.data?.response || "No content received.",
         id: uuid(),
         animate: true,
       };
 
       setMessages([...updatedMessages, aiReply]);
     } catch (error) {
+      console.error("Error while sending prompt to the server:", error);
+
       const errorReply = {
         role: 'assistant',
-        content: 'Error from server.',
+        content: error.response?.data?.detail || "Error from server.",
         id: uuid(),
         animate: true,
       };
+
       setMessages([...updatedMessages, errorReply]);
     } finally {
       setLoading(false);

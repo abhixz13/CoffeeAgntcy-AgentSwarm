@@ -229,6 +229,9 @@ dependencies = [
     { name = "langgraph-supervisor" },
     { name = "pydantic" },
     { name = "python-dotenv" },
+    { name = "requests" },
+    { name = "starlette" },
+    { name = "uvicorn" },
 ]
 
 [package.optional-dependencies]
@@ -267,8 +270,11 @@ requires-dist = [
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.17.0,<0.18" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.0.0,<5" },
     { name = "python-dotenv", specifier = ">=1.1.0" },
+    { name = "requests" },
+    { name = "starlette" },
     { name = "tiktoken", marker = "extra == 'dev'", specifier = ">=0.8.0,<0.9" },
     { name = "typing-extensions", marker = "extra == 'dev'", specifier = ">=4.12.2,<5" },
+    { name = "uvicorn" },
 ]
 provides-extras = ["dev"]
 
