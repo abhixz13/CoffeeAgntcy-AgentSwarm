@@ -1,8 +1,12 @@
 import click
+import uvicorn
 
-from a2a.server import A2AServer
-from a2a.server.request_handlers import DefaultA2ARequestHandler
-from a2a.types import (AgentAuthentication, AgentCapabilities, AgentCard,
+#from a2a.server import A2AServer
+from a2a.server.apps import A2AStarletteApplication
+#from a2a.server.request_handlers import DefaultA2ARequestHandler
+from a2a.server.tasks import InMemoryTaskStore
+from a2a.server.request_handlers import DefaultRequestHandler
+from a2a.types import (AgentCapabilities, AgentCard,
                        AgentSkill)
 
 from agent_executor import FarmAgentExecutor
@@ -28,19 +32,23 @@ def main(host: str, port: int):
         description='An AI agent that estimates the flavor profile of coffee beans using growing conditions like season and altitude.',
         url=f'http://{host}:{port}/',
         version='1.0.0',
-        defaultInputModes=["text/plain"],
-        defaultOutputModes=["text/plain"],
-        capabilities=AgentCapabilities(),
+        defaultInputModes=["text"],
+        defaultOutputModes=["text"],
+        capabilities=AgentCapabilities(streaming=True),
         skills=[skill],
-        authentication=AgentAuthentication(schemes=['public']),
+        supportsAuthenticatedExtendedCard=False,
     )
 
-    request_handler = DefaultA2ARequestHandler(
-        agent_executor=FarmAgentExecutor()
+    request_handler = DefaultRequestHandler(
+        agent_executor=FarmAgentExecutor(),
+        task_store=InMemoryTaskStore(),
     )
 
-    server = A2AServer(agent_card=agent_card, request_handler=request_handler)
-    server.start(host=host, port=port)
+    server = A2AStarletteApplication(
+        agent_card=agent_card, http_handler=request_handler
+    )
+
+    uvicorn.run(server.build(), host=host, port=port)
 
 if __name__ == '__main__':
     main(FARM_AGENT_HOST, FARM_AGENT_PORT)

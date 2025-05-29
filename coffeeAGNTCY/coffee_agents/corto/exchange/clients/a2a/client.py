@@ -36,7 +36,7 @@ async def send_message(prompt: str):
       )
   )
 
-  response = await client.send_message(request.params)
+  response = await client.send_message(request)
   logger.info(f"Response received from A2A agent: {response}")
   if response.root.result:
     if not response.root.result.parts:
