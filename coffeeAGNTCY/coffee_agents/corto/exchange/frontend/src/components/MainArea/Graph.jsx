@@ -1,16 +1,17 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect } from 'react';
 import {
     ReactFlow,
     ReactFlowProvider,
     useNodesState,
     useEdgesState,
     Controls,
-    MarkerType,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import CustomEdge from './Edge';
 
 const DELAY_DURATION = 1000; // Duration for each animation step in milliseconds
 const proOptions = { hideAttribution: true };
+
 // Constants for node and edge IDs
 const NODE_IDS = {
     BUYER: '1',
@@ -30,8 +31,8 @@ const initialNodes = [
         position: { x: 250, y: 50 },
         style: {
             fontFamily: "'CiscoSansTT'",
-            border: '1px solid #0A60FF',
-            backgroundColor: 'rgba(10, 96, 255, 0.3)',
+            border: '1px solid #187ADC',
+            backgroundColor: 'rgba(24, 122, 220, 0.3)',
             color: '#000000',
             fontWeight: '100',
             padding: 10,
@@ -49,13 +50,13 @@ const initialNodes = [
                         (Q Grader)
                     </div>
                 </div>
-            )
+            ),
         },
         position: { x: 250, y: 250 },
         style: {
             fontFamily: "'CiscoSansTT'",
-            border: '1px solid #0A60FF',
-            backgroundColor: 'rgba(10, 96, 255, 0.3)',
+            border: '1px solid #187ADC',
+            backgroundColor: 'rgba(24, 122, 220, 0.3)',
             color: '#000000',
             fontWeight: '100',
             padding: 10,
@@ -69,18 +70,20 @@ const initialEdges = [
         id: EDGE_IDS.BUYER_TO_SOMMELIER,
         source: NODE_IDS.BUYER,
         target: NODE_IDS.SOMMELIER,
-        label: 'A2A : SLIM',
-        style: { stroke: '#0A60FF', fontFamily: "'CiscoSansTT'", strokeWidth: 2 },
-        markerStart: {
-            type: MarkerType.ArrowClosed,
-            color: '#0A60FF',
+        style: { stroke: '#187ADC', strokeWidth: 2 },
+        data: {
+            label: 'A2A : SLIM',
+            edgeColor: '#187ADC',
+            labelColor: '#FFFFFF',
+            labelBackgroundColor: '#187ADC',
         },
-        markerEnd: {
-            type: MarkerType.ArrowClosed,
-            color: '#0A60FF',
-        },
+        type: 'custom',
     },
 ];
+
+const edgeTypes = {
+    custom: CustomEdge,
+};
 
 const Graph = ({ buttonClicked, setButtonClicked }) => {
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -100,43 +103,32 @@ const Graph = ({ buttonClicked, setButtonClicked }) => {
                             ...node,
                             style: {
                                 ...node.style,
-                                backgroundColor: 'rgba(0, 255, 0, 0.3)',
+                                backgroundColor: 'rgba(0, 200, 0, 0.4)',
                                 border: '1px solid #00FF00',
                             },
-                            position: node.position, // Ensure position remains unchanged
                         }
                         : node
                 )
             );
             await delay(DELAY_DURATION);
 
-            // Reset to initial nodes
-            setNodes((nds) =>
-                nds.map((node) => ({
-                    ...node,
-                    style: initialNodes.find((n) => n.id === node.id).style,
-                    position: node.position, // Ensure position remains unchanged
-                }))
-            );
-            await delay(DELAY_DURATION);
-
-            // Change edge to green
+            // Change edge color and label color to green
             setEdges((eds) =>
                 eds.map((edge) =>
                     edge.id === EDGE_IDS.BUYER_TO_SOMMELIER
                         ? {
                             ...edge,
-                            style: { ...edge.style, stroke: '#00FF00' },
-                            markerStart: { type: MarkerType.ArrowClosed, color: '#00FF00' },
-                            markerEnd: { type: MarkerType.ArrowClosed, color: '#00FF00' },
+                            style: { ...edge.style, stroke: 'rgba(0, 200, 0, 0.4)' },
+                            data: {
+                                ...edge.data,
+                                edgeColor: 'rgba(0, 200, 0, 0.4)',
+                                labelColor: '#000000',
+                                labelBackgroundColor: 'rgba(0, 200, 0, 0.4)',
+                            },
                         }
                         : edge
                 )
             );
-            await delay(DELAY_DURATION);
-
-            // Reset to initial edges
-            setEdges(initialEdges);
             await delay(DELAY_DURATION);
 
             // Change second node to green
@@ -147,17 +139,16 @@ const Graph = ({ buttonClicked, setButtonClicked }) => {
                             ...node,
                             style: {
                                 ...node.style,
-                                backgroundColor: 'rgba(0, 255, 0, 0.3)',
+                                backgroundColor: 'rgba(0, 200, 0, 0.4)',
                                 border: '1px solid #00FF00',
                             },
-                            position: node.position, // Ensure position remains unchanged
                         }
                         : node
                 )
             );
             await delay(DELAY_DURATION);
 
-            // Reset to initial nodes
+            // Reset nodes and edges to initial state
             setNodes((nds) =>
                 nds.map((node) => ({
                     ...node,
@@ -165,6 +156,7 @@ const Graph = ({ buttonClicked, setButtonClicked }) => {
                     position: node.position, // Ensure position remains unchanged
                 }))
             );
+            setEdges(initialEdges);
 
             // Reset buttonClicked state
             setButtonClicked(false);
@@ -174,21 +166,29 @@ const Graph = ({ buttonClicked, setButtonClicked }) => {
     }, [buttonClicked, setButtonClicked]);
 
     return (
-        <ReactFlowProvider>
-            <div style={{ width: '100%', height: '100%' }}>
-                <ReactFlow
-                    nodes={nodes}
-                    edges={edges}
-                    onNodesChange={onNodesChange}
-                    onEdgesChange={onEdgesChange}
-                    proOptions={proOptions}
-                    fitView
-                >
-                    <Controls />
-                </ReactFlow>
-            </div>
-        </ReactFlowProvider>
+        <div style={{ width: '100%', height: '100%' }}>
+            <ReactFlow
+                nodes={nodes}
+                edges={edges}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                proOptions={proOptions}
+                edgeTypes={edgeTypes}
+                fitView
+            >
+                <Controls />
+            </ReactFlow>
+        </div>
     );
 };
 
-export default Graph;
+// Wrapping with ReactFlowProvider
+function FlowWithProvider(props) {
+    return (
+        <ReactFlowProvider>
+            <Graph {...props} />
+        </ReactFlowProvider>
+    );
+}
+
+export default FlowWithProvider;

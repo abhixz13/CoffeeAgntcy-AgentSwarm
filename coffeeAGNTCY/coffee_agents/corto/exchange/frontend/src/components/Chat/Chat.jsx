@@ -1,17 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import './Chat.css';
 import MessageInput from './MessageInput';
 import Messages, { LOCAL_STORAGE_KEY } from './Messages';
-
-import logoSrc from '../../assets/coffee_agntcy.png';
-
-const ChatLogo = () => {
-  return (
-    <div className="chat_logo_container">
-      <img src={logoSrc} alt="Agency Coffee Logo" className="chat_logo_img" />
-    </div>
-  );
-};
+import ClearChatButton from "./ClearChatButton.jsx";
+import { Role } from '../../utils/const.js';
 
 const Chat = ({ messages, setMessages, setButtonClicked }) => {
   useEffect(() => {
@@ -20,7 +12,7 @@ const Chat = ({ messages, setMessages, setButtonClicked }) => {
 
   useEffect(() => {
     const updated = messages.map((msg) =>
-        msg.role === 'assistant' && msg.animate ? { ...msg, animate: false } : msg
+        msg.role === Role.ASSISTANT && msg.animate ? { ...msg, animate: false } : msg
     );
 
     const needsUpdate = JSON.stringify(messages) !== JSON.stringify(updated);
@@ -32,13 +24,19 @@ const Chat = ({ messages, setMessages, setButtonClicked }) => {
 
   return (
       <div className="chat_container">
-        <ChatLogo />
-        <Messages messages={messages} />
-        <MessageInput
-            messages={messages}
-            setMessages={setMessages}
-            setButtonClicked={setButtonClicked}
-        />
+        <div className="clear_chat_button_container">
+            <ClearChatButton setMessages={setMessages} />
+        </div>
+          <div  className="messages_container">
+              <Messages messages={messages} setMessages={setMessages} />
+          </div>
+        <div className="message_input_container">
+            <MessageInput
+                          messages={messages}
+                          setMessages={setMessages}
+                          setButtonClicked={setButtonClicked}
+            />
+        </div>
       </div>
   );
 };

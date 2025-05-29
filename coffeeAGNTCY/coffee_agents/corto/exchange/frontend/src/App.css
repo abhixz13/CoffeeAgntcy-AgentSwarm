@@ -35,7 +35,6 @@ body {
 
 :root {
   --header-height: 11vh;         /* 60px */
-  --footer-height: 3.75em;         /* 60px */
   --sidebar-width: 21.875em;       /* 350px */
   --border-color: #ccc;
   --background-light: #f7f7f7;
@@ -52,8 +51,18 @@ body {
   width: var(--sidebar-width);
   border-right: 1px solid var(--border-color);
   padding: 0.75em;                /* 12px */
-  overflow-y: auto;
+  overflow-y: hidden;
   background-color: #fff;
+}
+
+/* Chat Container */
+.chat_container {
+  height: 90%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: visible;
+  position: relative;
 }
 
 /* Main area container */
@@ -64,21 +73,13 @@ body {
   overflow: hidden;
 }
 
-/* Header */
 header {
   height: var(--header-height);     /* fixed container height */
-  line-height: var(--header-height); /* vertically centers text */
   background: #fff;
   border-bottom: 1px solid var(--border-color);
   display: flex;
   justify-content: center;           /* center horizontally */
   align-items: center;               /* center vertically */
-  padding: 0 1em;                   /* horizontal padding only */
-  font-size: 1.5em;                 /* larger font size */
-  font-weight: 100;
-  font-family: 'CiscoSansTT', Arial, sans-serif;
-  color: #4d4c4c;
-  overflow: hidden;                 /* prevent overflow if needed */
 }
 
 header img {
@@ -86,8 +87,7 @@ header img {
   height: auto;
 }
 
-/* Main content area */
-.main-panel {
+.graph_container {
   flex: 1;
   margin: 1.5em;                  /* 24px */
   background-color: var(--background-light);
