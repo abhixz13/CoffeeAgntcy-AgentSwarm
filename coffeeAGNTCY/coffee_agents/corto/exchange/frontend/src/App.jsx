@@ -5,6 +5,7 @@ import './App.css';
 import { v4 as uuid } from 'uuid';
 import { LOCAL_STORAGE_KEY } from './components/Chat/Messages';
 import headerImage from './assets/header.png'; // Import the image
+import ChatLogo from './components/Chat/ChatLogo'; // Import the ChatLogo component
 
 const App = () => {
     const [messages, setMessages] = useState(() => {
@@ -23,6 +24,7 @@ const App = () => {
     return (
         <div className="app-container">
             <div className="sidebar">
+                <ChatLogo />
                 <Chat
                     messages={messages}
                     setMessages={setMessages}
@@ -33,7 +35,7 @@ const App = () => {
                 <header>
                     <img src={headerImage} alt="Header" />
                 </header>
-                <div className="main-panel">
+                <div className="graph_container">
                     <Graph buttonClicked={buttonClicked} setButtonClicked={setButtonClicked} />
                 </div>
             </div>

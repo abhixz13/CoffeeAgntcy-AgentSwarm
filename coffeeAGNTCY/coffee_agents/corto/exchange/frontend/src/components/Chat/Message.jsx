@@ -1,4 +1,6 @@
+/** @jsxImportSource @emotion/react */
 import React, { useEffect, useRef, useState } from 'react';
+import { css } from '@emotion/react';
 import { HiUser } from 'react-icons/hi';
 import { RiRobot2Fill } from "react-icons/ri";
 
@@ -21,19 +23,38 @@ const SlowText = ({ text, speed = 25 }) => {
   return <span>{displayedText}</span>;
 };
 
+const messageContainerStyle = (aiMessage) => css`
+  display: flex;
+  justify-content: center;
+  padding: 30px 0;
+  background: ${aiMessage ? 'rgb(247, 247, 248)' : 'white'};
+`;
+
+const avatarContainerStyle = css`
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const messageTextStyle = css`
+  width: 80%;
+  padding: 0;
+  margin: 8px;
+  overflow-wrap: break-word;
+`;
+
 function Message({ content, aiMessage, animate }) {
   return (
-    <div
-      className="message_container"
-      style={{ background: aiMessage ? 'rgb(247, 247, 248)' : 'white' }}
-    >
-      <div className="message_avatar_container">
-        {aiMessage ? <RiRobot2Fill color="#049FD9" /> : <HiUser />}
+      <div css={messageContainerStyle(aiMessage)}>
+        <div css={avatarContainerStyle}>
+          {aiMessage ? <RiRobot2Fill color="#049FD9" /> : <HiUser />}
+        </div>
+        <p css={messageTextStyle}>
+          {animate ? <SlowText speed={20} text={content} /> : content}
+        </p>
       </div>
-      <p className="message_text">
-        {animate ? <SlowText speed={20} text={content} /> : content}
-      </p>
-    </div>
   );
 }
 

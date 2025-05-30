@@ -1,22 +1,30 @@
-import React, {useEffect} from 'react'
-import Message from './Message'
+import React, { useEffect, useRef } from 'react';
+import Message from './Message';
 
 export const LOCAL_STORAGE_KEY = "chat_messages";
 
-function Messages({ messages }) {
+function Messages({ messages, setMessages }) {
+    const messagesEndRef = useRef(null);
 
-  return (
-    <div className='chat_messages_container'>
-      {messages.map((msg) => (
-        <Message
-          key={msg.id}
-          content={msg.content}
-          aiMessage={msg.role === 'assistant'}
-          animate={msg.animate}
-        />
-      ))}
-    </div>
-  );
+    useEffect(() => {
+        // Scroll to the bottom whenever messages change
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
+
+    return (
+        <div>
+                {messages.map((msg) => (
+                    <Message
+                        key={msg.id}
+                        content={msg.content}
+                        aiMessage={msg.role === 'assistant'}
+                        animate={msg.animate}
+                    />
+                ))}
+                {/* Invisible div to ensure scrolling to the bottom */}
+                <div ref={messagesEndRef} />
+        </div>
+    );
 }
 
-export default Messages
+export default Messages;
