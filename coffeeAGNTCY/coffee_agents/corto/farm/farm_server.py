@@ -1,8 +1,6 @@
 from uvicorn import Config, Server
 import asyncio
-import argparse
 
-from gateway_sdk.factory import TransportTypes
 from gateway_sdk.factory import GatewayFactory
 
 from a2a.server.apps import A2AStarletteApplication
@@ -20,8 +18,6 @@ factory = GatewayFactory()
 async def main():
     """Run the A2A server with the Farm Agent."""
 
-    AGENT_CARD.url = f'http://{FARM_AGENT_HOST}:{FARM_AGENT_PORT}/'
-
     request_handler = DefaultRequestHandler(
         agent_executor=FarmAgentExecutor(),
         task_store=InMemoryTaskStore(),
@@ -37,11 +33,11 @@ async def main():
         await userver.serve()
     else:
         transport = factory.create_transport(
-            transport_type=TransportTypes[DEFAULT_MESSAGE_TRANSPORT],
-            server_endpoint=TRANSPORT_SERVER_ENDPOINT,
+            DEFAULT_MESSAGE_TRANSPORT,
+            endpoint=TRANSPORT_SERVER_ENDPOINT,
         )
         bridge = factory.create_bridge(server, transport=transport)
-        await bridge.start()
+        await bridge.start(blocking=True)
 
 if __name__ == '__main__':
     try:

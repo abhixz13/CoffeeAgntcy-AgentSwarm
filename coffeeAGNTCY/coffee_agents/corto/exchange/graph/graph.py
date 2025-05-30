@@ -7,7 +7,9 @@ from langgraph.prebuilt import create_react_agent
 from langgraph_supervisor import create_supervisor
 
 from common.llm import get_llm
-from graph.tools import get_flavor_profile_via_a2a
+from graph.tools import FlavorProfileTool
+
+from farm.card import AGENT_CARD as farm_agent_card
 
 logger = logging.getLogger("corto.supervisor.graph")
 
@@ -28,10 +30,15 @@ class ExchangeGraph:
         CompiledGraph: A fully compiled LangGraph instance ready for execution.
         """
         model = get_llm()
+
+        # initialize the flavor profile tool with the farm agent card
+        flavor_profile_tool = FlavorProfileTool(
+            remote_agent_card=farm_agent_card,
+        )
         
         get_flavor_profile_a2a_agent = create_react_agent(
             model=model,
-            tools=[get_flavor_profile_via_a2a],
+            tools=[flavor_profile_tool],  # list of tools for the agent
             name="get_flavor_profile_via_a2a",
         )
         graph = create_supervisor(

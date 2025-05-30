@@ -2,6 +2,7 @@ from a2a.types import (
     AgentCapabilities, 
     AgentCard,
     AgentSkill)
+from config.config import FARM_AGENT_HOST, FARM_AGENT_PORT
 
 AGENT_SKILL = AgentSkill(
     id="estimate_flavor",
@@ -19,7 +20,7 @@ AGENT_CARD = AgentCard(
     name='Coffee Farm Flavor Agent',
     id='flavor-profile-farm-agent',
     description='An AI agent that estimates the flavor profile of coffee beans using growing conditions like season and altitude.',
-    url='',
+    url=f'http://{FARM_AGENT_HOST}:{FARM_AGENT_PORT}/',
     version='1.0.0',
     defaultInputModes=["text"],
     defaultOutputModes=["text"],
