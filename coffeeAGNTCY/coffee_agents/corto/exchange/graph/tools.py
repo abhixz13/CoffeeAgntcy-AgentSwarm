@@ -22,7 +22,6 @@ from graph.models import FlavorProfileInput, FlavorProfileOutput
 from gateway_sdk.protocols.a2a.gateway import A2AProtocol
 from gateway_sdk.factory import GatewayFactory
 
-from config.config import DEFAULT_MESSAGE_TRANSPORT
 from config.config import DEFAULT_MESSAGE_TRANSPORT, TRANSPORT_SERVER_ENDPOINT
 
 logger = logging.getLogger("corto.supervisor.tools")
