@@ -46,7 +46,6 @@ If Node.js is not installed, download and install it from the [official website]
     source .venv/bin/activate
     ```
 
-
 2. **Install Dependencies:**
    Run the following command to install all required Python dependencies:
 
@@ -83,6 +82,15 @@ If Node.js is not installed, download and install it from the [official website]
    Ensure everything is set up correctly by running the farm server, exchange and UI as described below.
 
 ### Execution
+
+#### Step 0: Run the SLIM message bus gateway
+To enable A2A communication over SLIM, you need to run the SLIM message bus gateway. 
+
+You can do this by executing the following command:
+
+```sh
+docker-compose up agp-gateway
+```
 
 #### Step 1: Run the Farm Server
 Start the `farm_server`, which acts as an A2A agent, by executing:
