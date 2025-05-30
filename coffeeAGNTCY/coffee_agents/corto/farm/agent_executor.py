@@ -1,91 +1,89 @@
 import logging
-from uuid import uuid4
 
-from a2a.server.agent_execution import BaseAgentExecutor
+from a2a.server.agent_execution import AgentExecutor, RequestContext
 from a2a.server.events import EventQueue
-from a2a.types import (Message, Part, Role,
-                       SendMessageRequest, Task, TextPart)
-from typing_extensions import override
+from a2a.utils.errors import ServerError
+from a2a.types import (
+    UnsupportedOperationError,
+    JSONRPCResponse,
+    ContentTypeNotSupportedError,
+    InternalError,
+    Task)
 
-from agent import FarmAgent  # Import message_node
+from a2a.utils import (
+    new_agent_text_message,
+    new_task,
+)
+
+from agent import FarmAgent
 from agent_executor import FarmAgent
 
 logger = logging.getLogger("corto.farm_agent.a2a_executor")
 
-class FarmAgentExecutor(BaseAgentExecutor):
+class FarmAgentExecutor(AgentExecutor):
     def __init__(self):
         self.agent = FarmAgent()
 
-    @override
-    async def on_message_send(
-            self,
-            request: SendMessageRequest,
-            event_queue: EventQueue,
-            task: Task | None,
+    def _validate_request(self, context: RequestContext) -> JSONRPCResponse | None:
+        """Validates the incoming request."""
+        if not context or not context.message or not context.message.parts:
+            logger.error("Invalid request parameters: %s", context)
+            return JSONRPCResponse(error=ContentTypeNotSupportedError())
+        return None
+    
+    async def execute(
+        self,
+        context: RequestContext,
+        event_queue: EventQueue,
     ) -> None:
         """
-        Handle incoming message requests to generate a flavor profile for coffee beans.
-        This method processes the request, invokes the FarmAgent to generate a flavor profile,
-        and enqueues the response message to the event queue.
+        Execute the agent's logic for a given request context.
+
+        This method handles incoming message requests to generate a flavor profile for coffee beans.
+        The agent should extract the necessary information from the `context`, invoke the FarmAgent
+        to generate the flavor profile, and enqueue the response message to the `event_queue`.
+
+        During execution, the agent may also publish `Task`, `Message`, `TaskStatusUpdateEvent`,
+        or `TaskArtifactUpdateEvent` events. This method should return once the agent's execution
+        for the current request is complete or yields control (e.g., enters an input-required state).
 
         Args:
-            request (SendMessageRequest): The incoming message request containing the agent message.
-            event_queue (EventQueue): The event queue to enqueue the response message.
-            task (Task | None): Optional task context, not used in this implementation.
+            context: The request context containing the message, task ID, and other relevant data.
+            event_queue: The queue to publish events to.
         """
-        logger.info("Received message request: %s", request)
 
-        params = request.params
-        if not params or not params.message or not params.message.parts:
-            logger.error("Invalid request parameters: %s", params)
-            message = self._error_message("invalid_input", "Missing agent message")
-            event_queue.enqueue_event(message)
+        logger.info("Received message request: %s", context.message)
+
+        validation_error = self._validate_request(context)
+        if validation_error:
+            event_queue.enqueue_event(validation_error)
             return
-        prompt = params.message.parts[0].root.text
+        
+        prompt = context.get_user_input()
+        task = context.current_task
+        if not task:
+            task = new_task(context.message)
+            event_queue.enqueue_event(task)
+
         try:
             output = await self.agent.ainvoke(prompt)
             if output.get("error_message") is not None and output.get("error_message") != "":
                 logger.error("Error in agent response: %s", output.get("error_message"))
-                message = self._error_message(
-                    output.get("error_type", "internal_error"),
+                message = new_agent_text_message(
                     output.get("error_message", "Failed to generate flavor profile"),
                 )
                 event_queue.enqueue_event(message)
                 return
+
             flavor = output.get("flavor_notes", "No flavor profile returned")
             logger.info("Flavor profile generated: %s", flavor)
-            message = self._build_message(flavor)
+            event_queue.enqueue_event(new_agent_text_message(flavor))
         except Exception as e:
-            logger.error("Error during flavor profile generation: %s", e)
-            message = self._error_message("internal_error", "Failed to generate flavor profile")
-
-        event_queue.enqueue_event(message)
-
-    def _build_message(self, text: str) -> Message:
-        """
-        Build a message with the given text to be sent as a response.
-        Args:
-            text (str): The text content of the message.
-        Returns:
-            Message: A Message object containing the text as a part.
-        """
-        return Message(
-            role=Role.agent,
-            parts=[Part(TextPart(text=text))],
-            messageId=str(uuid4()),
-        )
-
-    def _error_message(self, code: str, msg: str) -> Message:
-        """
-        Build an error message with the given code and message.
-        Args:
-            code (str): The error code.
-            msg (str): The error message.
-        Returns:
-            Message: A Message object containing the error information.
-        """
-        return Message(
-            role=Role.agent,
-            parts=[Part(TextPart(text=f"{code}: {msg}"))],
-            messageId=str(uuid4()),
-        )
+            logger.error(f'An error occurred while streaming the flavor profile response: {e}')
+            raise ServerError(error=InternalError()) from e
+        
+    async def cancel(
+        self, request: RequestContext, event_queue: EventQueue
+    ) -> Task | None:
+        """Cancel this agent's execution for the given request context."""
+        raise ServerError(error=UnsupportedOperationError())

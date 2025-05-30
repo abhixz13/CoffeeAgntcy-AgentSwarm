@@ -5,7 +5,7 @@ description = ""
 authors = [{ name = "Shridhar Shah", email = "shridhsh@cisco.com" }]
 requires-python = ">=3.12,<4.0"
 dependencies = [
-    "a2a",
+    "a2a-sdk==0.2.5",
     "cisco-outshift-agent-utils>=0.0.2",
     "click>=8.1.8",
     "coloredlogs>=15.0.1",
@@ -24,6 +24,7 @@ dependencies = [
     "requests",
     "starlette",
     "uvicorn",
+    "gateway-sdk>=0.1.0",
 ]
 
 [project.optional-dependencies]
@@ -48,6 +49,3 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["farm", "exchange"]
-
-[tool.uv.sources]
-a2a = { git = "https://github.com/google/A2A", subdirectory = "a2a-python-sdk" }
