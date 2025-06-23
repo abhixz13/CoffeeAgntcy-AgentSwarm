@@ -18,35 +18,28 @@
 
 /** @jsxImportSource @emotion/react */
 import React from 'react';
-import { EdgeLabelRenderer } from '@xyflow/react';
 import { css } from '@emotion/react';
-import './styles/CustomEdgeLabel.css';
-import MCPOverSlimEdgeLabel from './MCPOverSlimEdgeLabel';
-import A2AEdgeLabel from './A2AEdgeLabel';
+import { EdgeLabelRenderer } from '@xyflow/react';
 
-const CustomEdgeLabel = ({ x, y, label, icon }) => {
-    if (label?.toLowerCase() === 'a2a') {
-        return <A2AEdgeLabel x={x} y={y} icon={icon} />;
-    }
-
-    if (label?.toLowerCase() === 'mcp/slim') {
-        return <MCPOverSlimEdgeLabel x={x} y={y} icon={icon} />;
-    }
-
+const MCPOverSlimEdgeLabel = ({ x, y }) => {
     const dynamicStyle = css`
         position: absolute;
         left: ${x}px;
         top: ${y}px;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
     `;
 
     return (
         <EdgeLabelRenderer>
-            <div className={`custom-edge-label`} css={dynamicStyle}>
-                <div className="custom-edge-label-icon">{icon}</div>
-                <div className="custom-edge-label-text">{label}</div>
+            <div className="custom-edge-label mcp-over-slim-edge-label" css={dynamicStyle}>
+                <div className="mcp-text">MCP</div>
+                <div className="slim-text">SLIM</div>
             </div>
         </EdgeLabelRenderer>
     );
 };
 
-export default CustomEdgeLabel;
+export default MCPOverSlimEdgeLabel;
