@@ -1,42 +1,34 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-appName: corto-exchange
+appName: lungo-ui
 appVersion: v1
 replicaCount: 1
 
 image:
-  repository: ghcr.io/cisco-outshift-ai-agents/coffee-agntcy/corto-exchange
+  repository: ghcr.io/cisco-outshift-ai-agents/coffee-agntcy/lungo-ui
   tag: latest
   pullPolicy: Always
   pullSecret:
 
 service:
-  port: 8000
+  port: 3000
 
 config:
-  farmAgentHost: ""
-  farmAgentPort: ""
-  azureOpenAiEndpoint: ""
-  azureOpenAiDeployment: ""
-  azureOpenAiApiVersion: ""
-  llmProvider: ""
-  transportServerEndpoint: ""
-  defaultMessageTransport: ""
+  exchangeAppApiUrl: ""
 
 # serviceaccount:
 #   annotations:
 #     eks.amazonaws.com/role-arn: REPLACE_WITH_ROLE_ARN
 
-
 ingress:
   enabled: true
-  name: corto-exchange-ingress
+  name: lungo-ui-ingress
   className: nginx
-  host: corto-exchange-ingress.outshift.io
-  serviceName: corto-exchange-ingress
-  servicePort: 8000
-  tlsSecret: corto-exchange-ingress-tls
+  host: lungo-ui-demo.outshift.io
+  serviceName: lungo-ui-ingress
+  servicePort: 3000
+  tlsSecret: lungo-ui-ingress-tls
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt
     nginx.ingress.kubernetes.io/rewrite-target: /
@@ -44,7 +36,7 @@ ingress:
 probes:
   livenessProbeEnabled: false
   readinessProbeEnabled: false
-  port: 8000
+  port: 3000
   endpoint: /v1/health
 
 resources:
