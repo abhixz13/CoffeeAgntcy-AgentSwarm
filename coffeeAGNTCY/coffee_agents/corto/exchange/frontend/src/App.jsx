@@ -22,7 +22,6 @@ import Chat from './components/Chat/Chat';
 import './App.css';
 import { v4 as uuid } from 'uuid';
 import { LOCAL_STORAGE_KEY } from './components/Chat/Messages';
-import headerImage from './assets/header.png'; // Import the image
 import ChatLogo from './components/Chat/ChatLogo';
 import CodePopUp from "./components/MainArea/CodePopUp.jsx"; // Import the ChatLogo component
 
@@ -53,8 +52,8 @@ const App = () => {
                 />
             </div>
             <div className="main-area">
-                <header>
-                    <img src={headerImage} alt="Header" />
+                <header className="header">
+                    Grader Conversation
                 </header>
                 <div className="code_popup_container">
                     <CodePopUp/>
