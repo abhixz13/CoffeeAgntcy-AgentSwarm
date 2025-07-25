@@ -5,22 +5,21 @@ import logging
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-import os
 from pydantic import BaseModel
 import uvicorn
 from dotenv import load_dotenv
-from ioa_observe.sdk import Observe
-from ioa_observe.sdk.tracing import session_start
-from ioa_observe.sdk.instrumentations.slim import SLIMInstrumentor
 from config.logging_config import setup_logging
+from graph import shared
+from agntcy_app_sdk.factory import AgntcyFactory
 from graph.graph import ExchangeGraph
+from ioa_observe.sdk.tracing import session_start
 
 setup_logging()
 logger = logging.getLogger("corto.supervisor.main")
 load_dotenv()
-Observe.init("corto_exchange", api_endpoint=os.getenv("OTLP_HTTP_ENDPOINT"))
 
-SLIMInstrumentor().instrument()
+# Initialize the shared agntcy factory with tracing enabled
+shared.set_factory(AgntcyFactory("corto.exchange", enable_tracing=True))
 
 app = FastAPI()
 # Add CORS middleware
