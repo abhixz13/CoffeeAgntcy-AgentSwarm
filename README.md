@@ -9,7 +9,7 @@
 
 This project is ideal for developers building agent-based systems and looking to explore:
 
-- How **SLIM** enables **broadcast** and **unicast** messaging
+- How **SLIM** enables **request-reply** and **group-communication** patterns
 - How tools and transports can be reused across agent implementations (e.g., **SLIM**, **NATS**, **MCP**)
 - How protocol-agnostic bridges and clients interconnect modular agents
 - How to orchestrate agents using **LangGraph** for structured and stateful workflows
@@ -17,6 +17,7 @@ This project is ideal for developers building agent-based systems and looking to
 - How to integrate data sources (e.g., weather services via **MCP**)
 - How to extend or swap agents modularly using AGNTCY tooling
 - How to enable observability using **AGNTCY Observe SDK**
+- How to enable identity using **AGNTCY Identity SDK**
 
 ---
 
@@ -38,12 +39,13 @@ We currently provide two setups you can run to see how components from AGNTCY wo
 
 ### Built With
 
-- [AGNTCY App SDK](https://github.com/agntcy/app-sdk) = v0.1.4
-- [SLIM](https://github.com/agntcy/slim) = v0.3.15
-- [A2A](https://github.com/a2aproject/a2a-python) = v0.2.5
+- [AGNTCY App SDK](https://github.com/agntcy/app-sdk) = v0.1.6
+- [SLIM](https://github.com/agntcy/slim) = v0.4.0
+- [A2A](https://github.com/a2aproject/a2a-python) = v0.2.16
 - [MCP](https://github.com/modelcontextprotocol/python-sdk) >= v1.10.0
 - [LangGraph](https://github.com/langchain-ai/langgraph) >= v0.4.1 
-- [Observe SDK](https://github.com/agntcy/observe) = 1.0.12
+- [Observe SDK](https://github.com/agntcy/observe) = 1.0.15
+- [Identity SDK](https://github.com/agntcy/identity) = 0.0.2
 
 ---
 
