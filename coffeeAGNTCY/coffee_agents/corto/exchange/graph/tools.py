@@ -50,7 +50,7 @@ class FlavorProfileTool(BaseTool):
         transport = factory.create_transport(
             DEFAULT_MESSAGE_TRANSPORT,
             endpoint=TRANSPORT_SERVER_ENDPOINT,
-            # SLIM transport requires a routable name (org/namespace/local) to build the PyName used for request-reply routing
+            # SLIM transport requires a routable name (org/namespace/agent) to build the PyName used for request-reply routing
             name="default/default/exchange"
         )
         self._client = await factory.create_client(
