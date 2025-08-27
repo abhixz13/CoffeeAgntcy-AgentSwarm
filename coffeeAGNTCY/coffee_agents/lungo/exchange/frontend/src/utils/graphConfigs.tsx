@@ -274,7 +274,16 @@ export const updateTransportLabels = async (
         node.id === "2"
           ? {
               ...node,
-              data: { ...node.data, label: `Transport: ${transport}` },
+              data: {
+                ...node.data,
+                label: `Transport: ${transport}`,
+                githubLink:
+                  transport === "SLIM"
+                    ? "https://github.com/agntcy/app-sdk/blob/main/src/agntcy_app_sdk/transports/slim/transport.py#L23"
+                    : transport === "NATS"
+                      ? "https://github.com/agntcy/app-sdk/blob/main/src/agntcy_app_sdk/transports/nats/transport.py#L21"
+                      : "https://github.com/agntcy/app-sdk/tree/main/src/agntcy_app_sdk/transports",
+              },
             }
           : node,
       ),
