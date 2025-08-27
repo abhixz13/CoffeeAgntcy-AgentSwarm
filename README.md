@@ -7,9 +7,9 @@
 
 **CoffeeAgntcy** is a reference implementation based on a fictitious coffee company to help developers understand how components in the **AGNTCY Internet of Agents** ecosystem can work together. It gives examples of the components of AGNTCY working together as a **Multi-agent System (MAS)**. 
 
-This project is ideal for developers building agent-based systems and looking to explore:
+This reference agentic application demonstrates how to:
 
-- How **SLIM** enables **request-reply** and **group-communication** patterns
+- How **SLIM** enables **request-reply** and **unicast (fire & forget)** patterns
 - How tools and transports can be reused across agent implementations (e.g., **SLIM**, **NATS**, **MCP**)
 - How protocol-agnostic bridges and clients interconnect modular agents
 - How to orchestrate agents using **LangGraph** for structured and stateful workflows
