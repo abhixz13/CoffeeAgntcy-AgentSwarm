@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **/
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { PatternType, PATTERNS } from "@/App"
 import SidebarItem from "./sidebarItem"
 import SidebarDropdown from "./SidebarDropdown"
@@ -18,6 +18,28 @@ const Sidebar: React.FC<SidebarProps> = ({
   onPatternChange,
 }) => {
   const [isTransportExpanded, setIsTransportExpanded] = useState(true)
+  const [transport, setTransport] = useState<string>("")
+
+  const DEFAULT_EXCHANGE_APP_API_URL = "http://127.0.0.1:8000"
+  const EXCHANGE_APP_API_URL =
+    (import.meta.env as any).VITE_EXCHANGE_APP_API_URL ||
+    DEFAULT_EXCHANGE_APP_API_URL
+
+  useEffect(() => {
+    const fetchTransportConfig = async () => {
+      try {
+        const response = await fetch(`${EXCHANGE_APP_API_URL}/transport/config`)
+        const data = await response.json()
+        if (data.transport) {
+          setTransport(data.transport)
+        }
+      } catch (error) {
+        console.error("Error fetching transport config:", error)
+      }
+    }
+
+    fetchTransportConfig()
+  }, [EXCHANGE_APP_API_URL])
 
   const handleTransportToggle = () => {
     setIsTransportExpanded(!isTransportExpanded)
@@ -47,9 +69,9 @@ const Sidebar: React.FC<SidebarProps> = ({
                 onToggle={handleTransportToggle}
               >
                 <SidebarItem
-                  title="A2A SLIM"
-                  isSelected={selectedPattern === PATTERNS.SLIM_MULTI_A2A}
-                  onClick={() => onPatternChange(PATTERNS.SLIM_MULTI_A2A)}
+                  title={`A2A ${transport}`}
+                  isSelected={selectedPattern === PATTERNS.PUBLISH_SUBSCRIBE}
+                  onClick={() => onPatternChange(PATTERNS.PUBLISH_SUBSCRIBE)}
                 />
               </SidebarDropdown>
             </div>

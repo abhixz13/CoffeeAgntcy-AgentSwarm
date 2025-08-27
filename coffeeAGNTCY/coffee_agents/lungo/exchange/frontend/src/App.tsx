@@ -16,7 +16,7 @@ import Sidebar from "@/components/Sidebar/Sidebar"
 import { Message } from "./types/message"
 export const PATTERNS = {
   SLIM_A2A: "slim_a2a",
-  SLIM_MULTI_A2A: "slim_multi_a2a",
+  PUBLISH_SUBSCRIBE: "publish_subscribe",
 } as const
 
 export type PatternType = (typeof PATTERNS)[keyof typeof PATTERNS]
@@ -25,7 +25,7 @@ const App: React.FC = () => {
   const { sendMessage } = useAgentAPI()
 
   const [selectedPattern, setSelectedPattern] = useState<PatternType>(
-    PATTERNS.SLIM_MULTI_A2A,
+    PATTERNS.PUBLISH_SUBSCRIBE,
   )
   const [aiReplied, setAiReplied] = useState<boolean>(false)
   const [buttonClicked, setButtonClicked] = useState<boolean>(false)
@@ -118,7 +118,7 @@ const App: React.FC = () => {
               setAiReplied={setAiReplied}
               isBottomLayout={true}
               showCoffeeDropdown={selectedPattern === PATTERNS.SLIM_A2A}
-              showCoffeePrompts={selectedPattern === PATTERNS.SLIM_MULTI_A2A}
+              showCoffeePrompts={selectedPattern === PATTERNS.PUBLISH_SUBSCRIBE}
               onCoffeeGraderSelect={handleCoffeeGraderSelect}
               onDropdownSelect={handleDropdownSelect}
               onUserInput={handleUserInput}

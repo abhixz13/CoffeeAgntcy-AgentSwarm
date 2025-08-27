@@ -94,8 +94,8 @@ const SLIM_A2A_CONFIG: GraphConfig = {
   animationSequence: [{ ids: ["1"] }, { ids: ["1-2"] }, { ids: ["2"] }],
 }
 
-const SLIM_MULTI_A2A_CONFIG: GraphConfig = {
-  title: "SLIM Multi A2A Coffee Farm Network",
+const PUBLISH_SUBSCRIBE_CONFIG: GraphConfig = {
+  title: "Publish Subscribe Coffee Farm Network",
   nodes: [
     {
       id: "1",
@@ -253,10 +253,10 @@ export const getGraphConfig = (pattern: string): GraphConfig => {
   switch (pattern) {
     case "slim_a2a":
       return SLIM_A2A_CONFIG
-    case "slim_multi_a2a":
-      return SLIM_MULTI_A2A_CONFIG
+    case "publish_subscribe":
+      return PUBLISH_SUBSCRIBE_CONFIG
     default:
-      return SLIM_MULTI_A2A_CONFIG
+      return PUBLISH_SUBSCRIBE_CONFIG
   }
 }
 
