@@ -13,7 +13,6 @@ from graph import shared
 from agntcy_app_sdk.factory import AgntcyFactory
 from graph.graph import ExchangeGraph
 from ioa_observe.sdk.tracing import session_start
-from config.config import DEFAULT_MESSAGE_TRANSPORT
 
 setup_logging()
 logger = logging.getLogger("corto.supervisor.main")
