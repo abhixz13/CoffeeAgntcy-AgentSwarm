@@ -14,6 +14,7 @@ export default {
         "content-background": "var(--content-background)",
 
         "node-background": "var(--node-background)",
+        "node-data-background": "var(--node-data-background)",
         "node-background-hover": "var(--node-background-hover)",
         "node-background-active": "var(--node-background-active)",
         "node-text-primary": "var(--node-text-primary)",

@@ -37,10 +37,6 @@ const GraderAgentIcon = (
   />
 )
 
-const commonNodeData = {
-  backgroundColor: "#F5F5F5",
-}
-
 const SLIM_A2A_CONFIG: GraphConfig = {
   title: "SLIM A2A Coffee Agent Communication",
   nodes: [
@@ -48,7 +44,6 @@ const SLIM_A2A_CONFIG: GraphConfig = {
       id: "1",
       type: "customNode",
       data: {
-        ...commonNodeData,
         icon: (
           <img
             src={supervisorIcon}
@@ -70,7 +65,6 @@ const SLIM_A2A_CONFIG: GraphConfig = {
       id: "2",
       type: "customNode",
       data: {
-        ...commonNodeData,
         icon: GraderAgentIcon,
         label1: "Grader Agent",
         label2: "Sommelier",
@@ -101,7 +95,6 @@ const PUBLISH_SUBSCRIBE_CONFIG: GraphConfig = {
       id: "1",
       type: "customNode",
       data: {
-        ...commonNodeData,
         icon: (
           <img
             src={supervisorIcon}
@@ -122,7 +115,6 @@ const PUBLISH_SUBSCRIBE_CONFIG: GraphConfig = {
       id: "2",
       type: "transportNode",
       data: {
-        ...commonNodeData,
         label: "Transport: ",
         githubLink:
           "https://github.com/agntcy/app-sdk/tree/main/src/agntcy_app_sdk/transports",
@@ -133,7 +125,6 @@ const PUBLISH_SUBSCRIBE_CONFIG: GraphConfig = {
       id: "3",
       type: "customNode",
       data: {
-        ...commonNodeData,
         icon: CoffeeBeanIcon,
         label1: "Brazil",
         label2: "Coffee Farm Agent",
@@ -151,7 +142,6 @@ const PUBLISH_SUBSCRIBE_CONFIG: GraphConfig = {
       id: "4",
       type: "customNode",
       data: {
-        ...commonNodeData,
         icon: CoffeeBeanIcon,
         label1: "Colombia",
         label2: "Coffee Farm Agent",
@@ -168,7 +158,6 @@ const PUBLISH_SUBSCRIBE_CONFIG: GraphConfig = {
       id: "5",
       type: "customNode",
       data: {
-        ...commonNodeData,
         icon: CoffeeBeanIcon,
         label1: "Vietnam",
         label2: "Coffee Farm Agent",
@@ -185,7 +174,6 @@ const PUBLISH_SUBSCRIBE_CONFIG: GraphConfig = {
       id: "6",
       type: "customNode",
       data: {
-        ...commonNodeData,
         icon: <TiWeatherCloudy className="h-4 w-4 text-white" />,
         label1: "MCP Server",
         label2: "Weather",

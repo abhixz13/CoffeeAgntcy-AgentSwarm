@@ -5,12 +5,10 @@
 
 import React from "react"
 import { Handle, Position } from "@xyflow/react"
-import { DefaultHandleColor } from "./CustomNode"
 
 interface SlimNodeData {
   label: string
   active?: boolean
-  handleColor?: string
 }
 
 interface SlimNodeProps {
@@ -24,7 +22,7 @@ const SlimNode: React.FC<SlimNodeProps> = ({ data }) => {
 
   return (
     <div
-      className={` ${activeClasses} flex items-center justify-center border border-gray-100 text-center text-gray-50 hover:bg-node-background-hover hover:shadow-[var(--shadow-default)_0px_6px_8px] hover:outline hover:outline-2 hover:outline-accent-border`}
+      className={` ${activeClasses} hover:bg-node-background-hover hover:outline-accent-border flex items-center justify-center border border-gray-100 text-center text-gray-50 hover:shadow-[var(--shadow-default)_0px_6px_8px] hover:outline hover:outline-2`}
       style={{
         width: "1200px",
         height: "52px",
@@ -41,8 +39,8 @@ const SlimNode: React.FC<SlimNodeProps> = ({ data }) => {
           width: "0.1px",
           height: "0.1px",
           border: `1px solid darkgrey`,
-          background: data.handleColor || DefaultHandleColor,
         }}
+        className="bg-node-data-background"
       />
       <Handle
         type="source"
@@ -53,8 +51,8 @@ const SlimNode: React.FC<SlimNodeProps> = ({ data }) => {
           width: "0.1px",
           height: "0.1px",
           border: `1px solid darkgrey`,
-          background: data.handleColor || DefaultHandleColor,
         }}
+        className="bg-node-data-background"
       />
       <Handle
         type="source"
@@ -65,8 +63,8 @@ const SlimNode: React.FC<SlimNodeProps> = ({ data }) => {
           width: "0.1px",
           height: "0.1px",
           border: `1px solid darkgrey`,
-          background: data.handleColor || DefaultHandleColor,
         }}
+        className="bg-node-data-background"
       />
       <Handle
         type="source"
@@ -77,8 +75,8 @@ const SlimNode: React.FC<SlimNodeProps> = ({ data }) => {
           width: "0.1px",
           height: "0.1px",
           border: `1px solid darkgrey`,
-          background: data.handleColor || DefaultHandleColor,
         }}
+        className="bg-node-data-background"
       />
     </div>
   )

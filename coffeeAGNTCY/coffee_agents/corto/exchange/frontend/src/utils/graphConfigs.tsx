@@ -33,10 +33,6 @@ const GraderAgentIcon = (
   />
 )
 
-const commonNodeData = {
-  backgroundColor: "#F5F5F5",
-}
-
 const SLIM_A2A_CONFIG: GraphConfig = {
   title: "SLIM A2A Coffee Agent Communication",
   nodes: [
@@ -44,7 +40,6 @@ const SLIM_A2A_CONFIG: GraphConfig = {
       id: "1",
       type: "customNode",
       data: {
-        ...commonNodeData,
         icon: (
           <img
             src={supervisorIcon}
@@ -71,7 +66,6 @@ const SLIM_A2A_CONFIG: GraphConfig = {
       id: "2",
       type: "customNode",
       data: {
-        ...commonNodeData,
         icon: GraderAgentIcon,
         label1: "Grader Agent",
         label2: "Sommelier",
