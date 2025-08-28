@@ -5,7 +5,6 @@
 
 import supervisorIcon from "@/assets/supervisor.png"
 import graderIcon from "@/assets/Grader-Agent.png"
-import { logger } from "./logger"
 
 interface GraphConfig {
   title: string
@@ -13,11 +12,6 @@ interface GraphConfig {
   edges: any[]
   animationSequence: { ids: string[] }[]
 }
-
-const DEFAULT_EXCHANGE_APP_API_URL = "http://127.0.0.1:8000"
-const EXCHANGE_APP_API_URL =
-  (import.meta.env as any).VITE_EXCHANGE_APP_API_URL ||
-  DEFAULT_EXCHANGE_APP_API_URL
 
 const GraderAgentIcon = (
   <img
@@ -83,7 +77,7 @@ const SLIM_A2A_CONFIG: GraphConfig = {
       source: "1",
       target: "2",
       data: {
-        label: "A2A: ",
+        label: "A2A: SLIM",
       },
       type: "custom",
     },
@@ -96,20 +90,11 @@ export const graphConfig = SLIM_A2A_CONFIG
 export const updateA2ALabels = async (
   setEdges: (updater: (edges: any[]) => any[]) => void,
 ): Promise<void> => {
-  try {
-    const response = await fetch(`${EXCHANGE_APP_API_URL}/transport/config`)
-
-    const data = await response.json()
-    const transport = data.transport
-
-    setEdges((edges: any[]) =>
-      edges.map((edge: any) =>
-        edge.id === "1-2"
-          ? { ...edge, data: { ...edge.data, label: `A2A: ${transport}` } }
-          : edge,
-      ),
-    )
-  } catch (error) {
-    logger.apiError("/api/config", error)
-  }
+  setEdges((edges: any[]) =>
+    edges.map((edge: any) =>
+      edge.id === "1-2"
+        ? { ...edge, data: { ...edge.data, label: "A2A: SLIM" } }
+        : edge,
+    ),
+  )
 }

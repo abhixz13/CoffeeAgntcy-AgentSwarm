@@ -24,9 +24,6 @@ const CustomEdgeLabel: React.FC<CustomEdgeLabelProps> = ({
   const isValidateLabel = label?.toLowerCase().includes("validate")
   const isLongLabel = isSlimLabel || isValidateLabel
 
-  const backgroundColor = active ? "#00142B" : "#183056"
-  const textColor = active ? "#187ADC" : "#E8E9EA"
-
   return (
     <EdgeLabelRenderer>
       <div
@@ -35,12 +32,13 @@ const CustomEdgeLabel: React.FC<CustomEdgeLabelProps> = ({
           "h-5 rounded-lg px-[5px] py-[2px] font-inter text-xs font-normal leading-4",
           "flex items-center justify-center border-none opacity-100 shadow-none",
           isLongLabel ? "w-[100px] gap-[6px]" : "w-[34px] gap-1",
+          active
+            ? "bg-edge-label-background-active text-edge-label-text-active"
+            : "bg-edge-label-background text-edge-label-text",
         )}
         style={{
           left: `${x}px`,
           top: `${y}px`,
-          backgroundColor,
-          color: textColor,
         }}
       >
         {label && (
@@ -49,7 +47,6 @@ const CustomEdgeLabel: React.FC<CustomEdgeLabelProps> = ({
               "flex flex-shrink-0 items-center justify-center whitespace-nowrap",
               "font-inter text-xs font-normal leading-4",
             )}
-            style={{ color: textColor }}
           >
             {label}
           </div>

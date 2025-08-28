@@ -68,18 +68,6 @@ async def handle_prompt(request: PromptRequest):
 async def health_check():
     return {"status": "ok"}
 
-@app.get("/transport/config")
-async def get_config():
-    """
-    Returns the current transport configuration.
-    
-    Returns:
-        dict: Configuration containing transport settings.
-    """
-    return {
-        "transport": DEFAULT_MESSAGE_TRANSPORT.upper()
-    }
-
 # Run the FastAPI server using uvicorn
 if __name__ == "__main__":
   uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

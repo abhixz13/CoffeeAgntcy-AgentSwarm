@@ -21,6 +21,11 @@ export default {
         "node-text-secondary": "var(--node-text-secondary)",
         "node-icon-background": "var(--node-icon-background)",
 
+        "edge-label-background": "var(--edge-label-background)",
+        "edge-label-background-active": "var(--edge-label-background-active)",
+        "edge-label-text": "var(--edge-label-text)",
+        "edge-label-text-active": "var(--edge-label-text-active)",
+
         "accent-primary": "var(--accent-primary)",
         "accent-border": "var(--accent-border)",
 

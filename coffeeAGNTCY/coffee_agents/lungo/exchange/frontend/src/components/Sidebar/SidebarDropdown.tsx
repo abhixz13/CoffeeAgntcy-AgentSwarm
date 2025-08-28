@@ -23,7 +23,7 @@ const SidebarDropdown: React.FC<SidebarDropdownProps> = ({
   return (
     <div className="flex w-[288px] flex-col items-start p-0">
       <div
-        className="flex h-9 w-[288px] cursor-pointer items-start gap-2 bg-sidebar-background px-5 py-2 pl-8 transition-colors hover:bg-[#373C42]"
+        className="flex h-9 w-[288px] cursor-pointer items-start gap-2 bg-primary-bg px-5 py-2 pl-8 transition-colors hover:bg-[#373C42]"
         onClick={onToggle}
       >
         <span className="flex-1 font-inter text-sm font-normal leading-5 tracking-[0.25px] text-white">
