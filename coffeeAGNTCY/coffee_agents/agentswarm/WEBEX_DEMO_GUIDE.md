@@ -1,103 +1,124 @@
 # AgentSwarm Webex Demo Guide
 
-## Quick Setup (15 minutes total)
+## Two Options for Webex Integration
+
+### Option A: Cisco Bot Gateway (RECOMMENDED for Cisco Network)
+- No ngrok needed!
+- Works on Cisco VPN
+- Uses RabbitMQ for message delivery
+
+### Option B: Webhook with ngrok (External Networks)
+- Requires ngrok
+- Works anywhere with internet
 
 ---
 
-## Step 1: Create Webex Bot (5 min)
+# Option A: Cisco Bot Gateway Setup (10 minutes)
+
+## Step 1: Create Webex Bot (if not done)
 
 1. Go to: https://developer.webex.com/my-apps
-2. Click **"Create a New App"** → **"Create a Bot"**
-3. Fill in:
-   - **Name:** `AgentSwarm Demo`
-   - **Username:** `agentswarm-[yourname]` (must be unique)
-   - **Description:** `Multi-Agent AI for Contact Center`
-4. Click **Create**
-5. **COPY THE BOT ACCESS TOKEN** (you can only see it once!)
+2. Click "Create a New App" → "Create a Bot"
+3. Fill in details, click "Create"
+4. **COPY THE BOT ACCESS TOKEN** (only shown once!)
 
----
+## Step 2: Register Bot on Quicker Bots
 
-## Step 2: Configure Environment (2 min)
+**IMPORTANT:** This step creates the RabbitMQ queue for your bot.
 
-Add your Webex token to `.env`:
+1. Go to: https://scripts.cisco.com/app/quicker_bots/
+2. Click "Add Bot"
+3. Paste your Bot Token
+4. Click "Add"
+5. Note the queue URL (you'll see something like: `.../queues/Webex-Teams-Bot-Gateway/your-bot-name`)
+
+## Step 3: Install pika (RabbitMQ client)
 
 ```bash
-cd coffeeAGNTCY/coffee_agents/agentswarm
-
-# Edit .env file and add:
-WEBEX_BOT_TOKEN=your_bot_token_here
+pip install pika
 ```
 
----
+## Step 4: Configure .env
 
-## Step 3: Start All Agents (3 min)
+Make sure your `.env` has:
+```bash
+WEBEX_BOT_TOKEN="your_bot_token_here"
+```
 
-Open 6 terminal windows:
+## Step 5: Start Agents + Bot Gateway
 
 ```bash
-# All terminals: First navigate to agentswarm folder
 cd coffeeAGNTCY/coffee_agents/agentswarm
 
-# Terminal 1: Knowledge Agent
+# Terminal 1-5: Start all agents (same as before)
 python agents/knowledge/server.py
-
-# Terminal 2: CRM Agent
 python agents/crm/server.py
-
-# Terminal 3: Ticket Agent
 python agents/ticket/server.py
-
-# Terminal 4: Escalation Agent
 python agents/escalation/server.py
-
-# Terminal 5: Orchestrator
 python agents/orchestrator/main.py
 
-# Terminal 6: Webex Bot
+# Terminal 6: Start Bot Gateway (instead of webhook bot)
+python webex/bot_gateway.py
+```
+
+## Step 6: Test It!
+
+1. Open Webex
+2. Search for your bot name
+3. Send a message: "How do I reset my password?"
+4. Watch the magic happen!
+
+---
+
+# Option B: Webhook with ngrok Setup (15 minutes)
+
+Use this if you're NOT on Cisco network or Bot Gateway doesn't work.
+
+## Step 1: Create Webex Bot (same as above)
+
+## Step 2: Install ngrok
+
+Download from: https://ngrok.com/download
+
+## Step 3: Start Agents + Webhook Bot
+
+```bash
+cd coffeeAGNTCY/coffee_agents/agentswarm
+
+# Terminal 1-5: Start all agents
+python agents/knowledge/server.py
+python agents/crm/server.py
+python agents/ticket/server.py
+python agents/escalation/server.py
+python agents/orchestrator/main.py
+
+# Terminal 6: Start Webhook Bot
 python webex/bot.py
 ```
 
-You should see all agents starting on their ports (8000-8004, 5000).
-
----
-
-## Step 4: Expose Bot to Internet (2 min)
-
-Webex needs to reach your local bot. Use ngrok:
+## Step 4: Expose with ngrok
 
 ```bash
-# Install ngrok if you don't have it
-# https://ngrok.com/download
-
-# Run ngrok
 ngrok http 5000
 ```
 
 Copy the HTTPS URL (e.g., `https://abc123.ngrok-free.app`)
 
----
-
-## Step 5: Register Webhook (3 min)
+## Step 5: Register Webhook
 
 1. Go to: https://developer.webex.com/my-apps
 2. Click on your bot
-3. Scroll to **Webhooks** section
-4. Click **Add Webhook**
-5. Fill in:
-   - **Name:** `AgentSwarm Messages`
-   - **Target URL:** `https://abc123.ngrok-free.app/webhook` (your ngrok URL)
-   - **Resource:** `messages`
-   - **Event:** `created`
-6. Click **Save**
-
----
+3. Scroll to "Webhooks" → "Add Webhook"
+4. Fill in:
+   - Name: `AgentSwarm Messages`
+   - Target URL: `https://abc123.ngrok-free.app/webhook`
+   - Resource: `messages`
+   - Event: `created`
+5. Click "Save"
 
 ## Step 6: Test It!
 
-1. Open Webex
-2. Start a direct message with your bot (search for `agentswarm-[yourname]@webex.bot`)
-3. Send a message: "How do I reset my password?"
-4. Watch the magic happen!
+Same as Option A - message your bot in Webex!
 
 ---
 
@@ -133,62 +154,92 @@ Bot: This has been flagged as CRITICAL.
 
 ## Troubleshooting
 
-### Bot doesn't respond?
-- Check all 6 terminals are running
-- Check ngrok is running and URL is correct
-- Check webhook is registered correctly
-- Look at terminal logs for errors
+### Bot Gateway Issues
 
-### Rate limit error?
-- Your OpenAI API key has a rate limit
-- Wait a few minutes or use GROQ instead
+**Authentication Error:**
+```
+[ERROR] Authentication failed!
+```
+→ Make sure you registered bot at https://scripts.cisco.com/app/quicker_bots/
 
-### Webhook not receiving?
-- Make sure ngrok URL has `/webhook` at the end
-- Check Webex webhook status shows "active"
+**Connection Error:**
+```
+[ERROR] Could not connect to RabbitMQ
+```
+→ Make sure you're on Cisco VPN
+
+**Queue Not Found:**
+→ Queue name = bot's display name (lowercase, spaces → hyphens)
+→ Check the queue name at quicker_bots portal
+
+### Webhook Issues
+
+**Bot doesn't respond:**
+- Check ngrok is running
+- Check webhook URL has `/webhook` at end
+- Check webhook is "active" in developer portal
+
+### Rate Limit Error
+```
+Rate limit reached for gpt-4o-mini
+```
+→ Wait a few minutes or switch to GROQ
 
 ---
 
 ## Architecture
 
+### Option A: Bot Gateway
 ```
-Webex User
+Webex Cloud
+    |
+    v (WebSocket)
+Bot Listener (K8s)
+    |
+    v (AMQP)
+RabbitMQ Queue
+    |
+    v (pika)
+bot_gateway.py (5000)
+    |
+    v (HTTP)
+Orchestrator (8000)
     |
     v
-Webex Cloud --> Webhook --> Webex Bot (5000)
-                               |
-                               v
-                          Orchestrator (8000)
-                          /    |    \    \
-                         v     v     v    v
-                      8001   8002  8003  8004
-                   Knowledge  CRM  Ticket Escalation
+Specialist Agents (8001-8004)
+```
+
+### Option B: Webhook
+```
+Webex Cloud
+    |
+    v (HTTPS webhook)
+ngrok tunnel
+    |
+    v
+bot.py (5000)
+    |
+    v (HTTP)
+Orchestrator (8000)
+    |
+    v
+Specialist Agents (8001-8004)
 ```
 
 ---
 
-## Quick Commands Reference
+## Quick Reference
 
 ```bash
-# Health check all services
+# Health checks
 curl http://localhost:8000/health  # Orchestrator
 curl http://localhost:8001/health  # Knowledge
 curl http://localhost:8002/health  # CRM
 curl http://localhost:8003/health  # Ticket
 curl http://localhost:8004/health  # Escalation
-curl http://localhost:5000/health  # Webex Bot
 
 # Test orchestrator directly
 curl -X POST http://localhost:8000/agent/prompt \
   -H "Content-Type: application/json" \
   -d '{"prompt": "How do I reset my password?"}'
 ```
-
----
-
-## Need Help?
-
-- Check terminal logs for errors
-- Make sure .env has all required values
-- Restart all agents if something seems stuck
-
