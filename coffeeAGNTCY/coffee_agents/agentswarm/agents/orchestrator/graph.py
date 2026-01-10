@@ -1,52 +1,35 @@
 # Copyright AGNTCY Contributors (https://github.com/agntcy)
 # SPDX-License-Identifier: Apache-2.0
-# AgentSwarm - Orchestrator LangGraph
+# AgentSwarm - Orchestrator LangGraph (HTTP Mode - No Docker Required!)
 
 import logging
-from langchain_core.messages import AIMessage, SystemMessage
+from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.prompts import PromptTemplate
 from langgraph.graph import StateGraph, END
-from langgraph.prebuilt import ToolNode
-
-from ioa_observe.sdk.decorators import agent, graph
 
 from agents.orchestrator.models import OrchestratorState, NodeNames, IntentType
-from agents.orchestrator.tools import (
-    query_knowledge_agent,
-    query_crm_agent,
-    query_ticket_agent,
-    query_escalation_agent,
-    ALL_TOOLS,
-)
+from agents.orchestrator.http_client import get_http_client
 from common.llm import get_llm
 
 logger = logging.getLogger("agentswarm.orchestrator.graph")
 
-@agent(name="orchestrator_agent")
+
 class OrchestratorGraph:
     """
     Orchestrator Agent - Supervisor that coordinates all specialist agents.
-    Uses LangGraph to manage multi-agent workflow.
+    Uses simple HTTP calls (no Docker/SLIM required).
     """
     
     def __init__(self):
         """Initialize the orchestrator with LangGraph workflow."""
         self.supervisor_llm = None
         self.aggregator_llm = None
-        self.graph = self.build_graph()
-        logger.info("Orchestrator Graph initialized")
+        self.http_client = get_http_client()
+        self.graph = self._build_graph()
+        logger.info("Orchestrator Graph initialized (HTTP Mode)")
     
-    @graph(name="orchestrator_graph")
-    def build_graph(self):
-        """
-        Build the LangGraph workflow for orchestration.
-        
-        Workflow:
-        1. Supervisor: Analyze intent
-        2. Route to appropriate specialist agent(s)
-        3. Aggregator: Combine responses
-        4. Return final answer
-        """
+    def _build_graph(self):
+        """Build the LangGraph workflow for orchestration."""
         workflow = StateGraph(OrchestratorState)
         
         # Add nodes
@@ -85,9 +68,7 @@ class OrchestratorGraph:
         return workflow.compile()
     
     async def _supervisor_node(self, state: OrchestratorState) -> dict:
-        """
-        Supervisor node: Analyzes customer query and determines intent.
-        """
+        """Supervisor node: Analyzes customer query and determines intent."""
         if not self.supervisor_llm:
             self.supervisor_llm = get_llm()
         
@@ -116,7 +97,7 @@ Intent:""",
         response = await chain.ainvoke({"user_message": user_message})
         intent = response.content.strip().lower()
         
-        # Validate and default to general if invalid
+        # Validate intent
         valid_intents = [IntentType.FAQ, IntentType.CUSTOMER_LOOKUP, IntentType.TICKET, IntentType.ESCALATION, IntentType.GENERAL]
         if intent not in valid_intents:
             logger.warning(f"Invalid intent '{intent}', defaulting to 'general'")
@@ -132,61 +113,35 @@ Intent:""",
         return intent
     
     async def _knowledge_node(self, state: OrchestratorState) -> dict:
-        """Knowledge node: Query knowledge agent for FAQ answer."""
-        logger.info("Knowledge node executing")
+        """Knowledge node: Query knowledge agent via HTTP."""
+        logger.info("Knowledge node executing (HTTP)")
         user_message = state["messages"][-1].content
-        
-        try:
-            response = await query_knowledge_agent(user_message)
-            logger.info(f"Knowledge agent responded: {response[:100]}...")
-            return {"knowledge_response": response}
-        except Exception as e:
-            logger.error(f"Knowledge agent error: {e}")
-            return {"knowledge_response": f"Knowledge agent temporarily unavailable: {e}"}
+        response = await self.http_client.query_knowledge(user_message)
+        return {"knowledge_response": response}
     
     async def _crm_node(self, state: OrchestratorState) -> dict:
-        """CRM node: Query CRM agent for customer information."""
-        logger.info("CRM node executing")
+        """CRM node: Query CRM agent via HTTP."""
+        logger.info("CRM node executing (HTTP)")
         user_message = state["messages"][-1].content
-        
-        try:
-            response = await query_crm_agent(user_message)
-            logger.info(f"CRM agent responded: {response[:100]}...")
-            return {"crm_response": response}
-        except Exception as e:
-            logger.error(f"CRM agent error: {e}")
-            return {"crm_response": f"CRM system temporarily unavailable: {e}"}
+        response = await self.http_client.query_crm(user_message)
+        return {"crm_response": response}
     
     async def _ticket_node(self, state: OrchestratorState) -> dict:
-        """Ticket node: Query ticket agent to create/lookup ticket."""
-        logger.info("Ticket node executing")
+        """Ticket node: Query ticket agent via HTTP."""
+        logger.info("Ticket node executing (HTTP)")
         user_message = state["messages"][-1].content
-        
-        try:
-            response = await query_ticket_agent(user_message)
-            logger.info(f"Ticket agent responded: {response[:100]}...")
-            return {"ticket_response": response}
-        except Exception as e:
-            logger.error(f"Ticket agent error: {e}")
-            return {"ticket_response": f"Ticketing system temporarily unavailable: {e}"}
+        response = await self.http_client.query_ticket(user_message)
+        return {"ticket_response": response}
     
     async def _escalation_node(self, state: OrchestratorState) -> dict:
-        """Escalation node: Query escalation agent for routing decision."""
-        logger.info("Escalation node executing")
+        """Escalation node: Query escalation agent via HTTP."""
+        logger.info("Escalation node executing (HTTP)")
         user_message = state["messages"][-1].content
-        
-        try:
-            response = await query_escalation_agent(user_message)
-            logger.info(f"Escalation agent responded: {response[:100]}...")
-            return {"escalation_response": response}
-        except Exception as e:
-            logger.error(f"Escalation agent error: {e}")
-            return {"escalation_response": f"Escalation system temporarily unavailable: {e}"}
+        response = await self.http_client.query_escalation(user_message)
+        return {"escalation_response": response}
     
     async def _aggregator_node(self, state: OrchestratorState) -> dict:
-        """
-        Aggregator node: Combines responses from specialist agents into final answer.
-        """
+        """Aggregator node: Combines responses from specialist agents."""
         if not self.aggregator_llm:
             self.aggregator_llm = get_llm()
         
@@ -207,7 +162,7 @@ Intent:""",
         user_query = state["messages"][-1].content
         
         prompt = PromptTemplate(
-            template="""You are a customer support agent synthesizing information from multiple specialist systems.
+            template="""You are a customer support agent synthesizing information from specialist systems.
 
 Customer Query: {user_query}
 
@@ -220,7 +175,7 @@ Create a unified, helpful response that:
 3. Is clear, concise, and professional
 4. Includes any ticket numbers, escalation info, or next steps
 
-Final Response to Customer:""",
+Final Response:""",
             input_variables=["user_query", "combined_responses"]
         )
         
@@ -231,7 +186,7 @@ Final Response to Customer:""",
         })
         
         final_response = response.content.strip()
-        logger.info(f"Aggregator created final response: {final_response[:100]}...")
+        logger.info(f"Aggregator response: {final_response[:100]}...")
         
         return {
             "messages": [AIMessage(content=final_response)],
@@ -239,7 +194,7 @@ Final Response to Customer:""",
         }
     
     async def _general_node(self, state: OrchestratorState) -> dict:
-        """General node: Handle general queries without specialist agents."""
+        """General node: Handle general queries."""
         logger.info("General node executing")
         
         response = "Hello! I'm AgentSwarm, your AI support assistant. I can help you with:\n" \
@@ -254,9 +209,9 @@ Final Response to Customer:""",
             "final_response": response
         }
     
-    async def serve(self, prompt: str) -> str:
+    async def run(self, prompt: str) -> str:
         """
-        Main entry point: Process customer query through orchestrator.
+        Main entry point: Process customer query.
         
         Args:
             prompt: Customer's query
@@ -264,18 +219,11 @@ Final Response to Customer:""",
         Returns:
             str: Final response
         """
-        from langchain_core.messages import HumanMessage
-        
-        logger.info(f"Orchestrator serving prompt: {prompt[:100]}...")
+        logger.info(f"Orchestrator processing: {prompt[:100]}...")
         
         initial_state = {
             "messages": [HumanMessage(content=prompt)]
         }
         
         result = await self.graph.ainvoke(initial_state)
-        final_response = result.get("final_response", "I apologize, but I encountered an issue processing your request.")
-        
-        logger.info("Orchestrator completed")
-        return final_response
-
-
+        return result.get("final_response", "Sorry, I encountered an issue.")

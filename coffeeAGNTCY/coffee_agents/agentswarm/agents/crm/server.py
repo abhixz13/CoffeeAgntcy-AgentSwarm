@@ -1,105 +1,75 @@
 # Copyright AGNTCY Contributors (https://github.com/agntcy)
 # SPDX-License-Identifier: Apache-2.0
-# AgentSwarm - CRM Agent A2A Server
+# AgentSwarm - CRM Agent HTTP Server (No Docker Required!)
 
-import asyncio
 import logging
+import sys
+import os
 
-from a2a.server.apps import A2AStarletteApplication
-from a2a.server.request_handlers import DefaultRequestHandler
-from a2a.server.tasks import InMemoryTaskStore
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
 from dotenv import load_dotenv
-from uvicorn import Config, Server
-
-from agntcy_app_sdk.semantic.a2a.protocol import A2AProtocol
-from agntcy_app_sdk.app_sessions import AppContainer
-
-from config.config import (
-    DEFAULT_MESSAGE_TRANSPORT,
-    TRANSPORT_SERVER_ENDPOINT,
-    CRM_AGENT_PORT,
-    ENABLE_HTTP,
-)
-from config.logging_config import setup_logging
-from agents.crm.agent import factory
-from agents.crm.agent_executor import CRMAgentExecutor
-from agents.crm.card import AGENT_CARD
-
-setup_logging()
-logger = logging.getLogger("agentswarm.crm_agent.server")
 load_dotenv()
 
-async def run_http_server(server, port):
-    """Run the HTTP/REST server."""
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+import uvicorn
+
+from agents.crm.agent import CRMAgent
+from agents.crm.card import AGENT_CARD
+from config.config import CRM_AGENT_PORT
+from config.logging_config import setup_logging
+
+setup_logging()
+logger = logging.getLogger("agentswarm.crm.server")
+
+app = FastAPI(
+    title=AGENT_CARD.name,
+    description=AGENT_CARD.description,
+    version=AGENT_CARD.version
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+agent = CRMAgent()
+
+class PromptRequest(BaseModel):
+    prompt: str
+
+@app.post("/process")
+async def process_prompt(request: PromptRequest):
+    """Process a customer query and return CRM data."""
     try:
-        logger.info(f"Starting CRM Agent HTTP server on port {port}")
-        config = Config(app=server.build(), host="0.0.0.0", port=port, loop="asyncio")
-        userver = Server(config)
-        await userver.serve()
+        logger.info(f"Processing: {request.prompt[:50]}...")
+        response = await agent.process(request.prompt)
+        return {"response": response}
     except Exception as e:
-        logger.error(f"HTTP server encountered an error: {e}", exc_info=True)
+        logger.error(f"Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-async def run_transport(server, transport_type, endpoint):
-    """Run the transport bridge."""
-    try:
-        personal_topic = A2AProtocol.create_agent_topic(AGENT_CARD)
-        logger.info(f"CRM Agent topic: {personal_topic}")
-        
-        transport = factory.create_transport(
-            transport_type, 
-            endpoint=endpoint, 
-            name=f"default/default/{personal_topic}"
-        )
+@app.get("/health")
+async def health():
+    return {"status": "healthy", "agent": AGENT_CARD.name}
 
-        app_session = factory.create_app_session(max_sessions=1)
-        app_session.add_app_container(
-            "crm_session", 
-            AppContainer(server, transport=transport, topic=personal_topic)
-        )
+@app.get("/")
+async def root():
+    return {
+        "name": AGENT_CARD.name,
+        "description": AGENT_CARD.description,
+        "port": CRM_AGENT_PORT,
+        "endpoints": ["POST /process", "GET /health"]
+    }
 
-        logger.info("Starting CRM Agent transport session")
-        await app_session.start_session("crm_session")
-        
-        while True:
-            await asyncio.sleep(1)
-
-    except Exception as e:
-        logger.error(f"Transport encountered an error: {e}", exc_info=True)
-        await app_session.stop_all_sessions()
-
-async def main(enable_http: bool):
-    """Run the A2A server."""
-    logger.info("Initializing CRM Agent server")
-    
-    request_handler = DefaultRequestHandler(
-        agent_executor=CRMAgentExecutor(),
-        task_store=InMemoryTaskStore(),
-    )
-
-    server = A2AStarletteApplication(
-        agent_card=AGENT_CARD, 
-        http_handler=request_handler
-    )
-
-    logger.info(f"CRM Agent Configuration:")
-    logger.info(f"  - Transport: {DEFAULT_MESSAGE_TRANSPORT}")
-    logger.info(f"  - Endpoint: {TRANSPORT_SERVER_ENDPOINT}")
-    logger.info(f"  - HTTP Port: {CRM_AGENT_PORT}")
-
-    async with asyncio.TaskGroup() as tg:
-        if enable_http:
-            tg.create_task(run_http_server(server, CRM_AGENT_PORT))
-        tg.create_task(run_transport(server, DEFAULT_MESSAGE_TRANSPORT, TRANSPORT_SERVER_ENDPOINT))
-
-if __name__ == '__main__':
-    try:
-        logger.info("=" * 60)
-        logger.info("AgentSwarm - CRM Agent Starting")
-        logger.info("=" * 60)
-        asyncio.run(main(ENABLE_HTTP))
-    except KeyboardInterrupt:
-        logger.info("\nShutting down gracefully.")
-    except Exception as e:
-        logger.error(f"Error occurred: {e}", exc_info=True)
-
-
+if __name__ == "__main__":
+    print("=" * 60)
+    print(f" {AGENT_CARD.name}")
+    print(f" Port: {CRM_AGENT_PORT}")
+    print("=" * 60)
+    uvicorn.run(app, host="0.0.0.0", port=CRM_AGENT_PORT)
