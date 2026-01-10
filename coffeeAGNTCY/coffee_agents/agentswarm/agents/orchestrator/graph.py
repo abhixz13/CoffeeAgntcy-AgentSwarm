@@ -188,8 +188,10 @@ Final Response:""",
         final_response = response.content.strip()
         logger.info(f"Aggregator response: {final_response[:100]}...")
         
+        # Return only final_response - MessagesState handles message merging via add_messages reducer
+        # Appending to messages should use the AIMessage directly, not a list replacement
         return {
-            "messages": [AIMessage(content=final_response)],
+            "messages": AIMessage(content=final_response),
             "final_response": final_response
         }
     
@@ -204,8 +206,9 @@ Final Response:""",
                    "- Routing urgent issues\n\n" \
                    "How can I assist you today?"
         
+        # Return AIMessage directly - MessagesState's add_messages reducer will append it properly
         return {
-            "messages": [AIMessage(content=response)],
+            "messages": AIMessage(content=response),
             "final_response": response
         }
     

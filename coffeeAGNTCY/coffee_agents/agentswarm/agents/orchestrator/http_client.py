@@ -4,6 +4,7 @@
 
 import logging
 import httpx
+from contextlib import asynccontextmanager
 from typing import Optional
 
 from config.config import (
@@ -23,11 +24,25 @@ AGENT_ENDPOINTS = {
     "escalation": f"http://localhost:{ESCALATION_AGENT_PORT}/process",
 }
 
+# Default timeout
+DEFAULT_TIMEOUT = 30.0
+
+
 class HTTPAgentClient:
-    """Simple HTTP client for calling specialist agents."""
+    """
+    Simple HTTP client for calling specialist agents.
+    Uses per-request client creation to avoid resource leaks.
+    """
     
-    def __init__(self):
-        self.client = httpx.AsyncClient(timeout=30.0)
+    def __init__(self, timeout: float = DEFAULT_TIMEOUT):
+        """Initialize client configuration (no resources allocated yet)."""
+        self.timeout = timeout
+    
+    @asynccontextmanager
+    async def _get_client(self):
+        """Context manager for HTTP client - ensures proper cleanup."""
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            yield client
     
     async def call_agent(self, agent_name: str, prompt: str) -> str:
         """
@@ -47,16 +62,18 @@ class HTTPAgentClient:
         
         try:
             logger.info(f"Calling {agent_name} agent at {endpoint}")
-            response = await self.client.post(
-                endpoint,
-                json={"prompt": prompt},
-                timeout=30.0
-            )
-            response.raise_for_status()
-            data = response.json()
-            result = data.get("response", "No response from agent")
-            logger.info(f"{agent_name} agent responded: {result[:100]}...")
-            return result
+            
+            # Use context manager for automatic resource cleanup
+            async with self._get_client() as client:
+                response = await client.post(
+                    endpoint,
+                    json={"prompt": prompt},
+                )
+                response.raise_for_status()
+                data = response.json()
+                result = data.get("response", "No response from agent")
+                logger.info(f"{agent_name} agent responded: {result[:100]}...")
+                return result
             
         except httpx.ConnectError:
             logger.warning(f"{agent_name} agent not running at {endpoint}")
@@ -85,13 +102,9 @@ class HTTPAgentClient:
     async def query_escalation(self, prompt: str) -> str:
         """Query Escalation Agent for routing decisions."""
         return await self.call_agent("escalation", prompt)
-    
-    async def close(self):
-        """Close the HTTP client."""
-        await self.client.aclose()
 
 
-# Singleton instance
+# Singleton instance (lightweight - no resources held)
 _client: Optional[HTTPAgentClient] = None
 
 def get_http_client() -> HTTPAgentClient:
@@ -100,4 +113,3 @@ def get_http_client() -> HTTPAgentClient:
     if _client is None:
         _client = HTTPAgentClient()
     return _client
-
