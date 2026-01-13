@@ -3,6 +3,8 @@
 # AgentSwarm - Simple HTTP Client for Agent Communication (No Docker Required!)
 
 import logging
+import json
+import time
 import httpx
 from contextlib import asynccontextmanager
 from typing import Optional
@@ -62,6 +64,9 @@ class HTTPAgentClient:
         
         try:
             logger.info(f"Calling {agent_name} agent at {endpoint}")
+            # #region agent log
+            with open(r'c:\code\coffeeAgentify\.cursor\debug.log', 'a') as f: f.write(json.dumps({"hypothesisId":"H4","location":"http_client.py:call_agent:start","message":"Calling agent","data":{"agent":agent_name,"endpoint":endpoint,"prompt_len":len(prompt)},"timestamp":int(time.time()*1000),"sessionId":"debug-session"})+'\n')
+            # #endregion
             
             # Use context manager for automatic resource cleanup
             async with self._get_client() as client:
@@ -72,6 +77,9 @@ class HTTPAgentClient:
                 response.raise_for_status()
                 data = response.json()
                 result = data.get("response", "No response from agent")
+                # #region agent log
+                with open(r'c:\code\coffeeAgentify\.cursor\debug.log', 'a') as f: f.write(json.dumps({"hypothesisId":"H4","location":"http_client.py:call_agent:success","message":"Agent responded","data":{"agent":agent_name,"status":response.status_code,"result_len":len(result)},"timestamp":int(time.time()*1000),"sessionId":"debug-session"})+'\n')
+                # #endregion
                 logger.info(f"{agent_name} agent responded: {result[:100]}...")
                 return result
             

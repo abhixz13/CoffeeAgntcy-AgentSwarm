@@ -15,10 +15,15 @@ class AgentQueryArgs(BaseModel):
 class OrchestratorState(MessagesState):
     """
     State passed between nodes in the orchestrator graph.
-    Extends MessagesState with custom fields.
+    Extends MessagesState with custom fields for multi-agent collaboration.
     """
     next_node: str = ""
-    intent: str = ""  # faq, customer_lookup, ticket, escalation, general
+    intent: str = ""  # multi_agent or general
+    agents_to_call: list = []  # List of agents to consult
+    agents_called: list = []  # List of agents actually called
+    execution_trace: list = []  # Trace of agent execution for demo
+    agent_communications: list = []  # Agent-to-agent messages for demo
+    total_time: float = 0.0  # Total execution time
     knowledge_response: str = ""
     crm_response: str = ""
     ticket_response: str = ""

@@ -8,22 +8,31 @@ from dotenv import load_dotenv
 load_dotenv()  # Automatically loads from `.env` or `.env.local`
 
 # ============================================================================
+# AI Backend Selection
+# ============================================================================
+# Options: "circuit" (Cisco internal) or "litellm" (OpenAI, GROQ, Azure)
+AI_BACKEND = os.getenv("AI_BACKEND", "litellm").lower()
+
+# ============================================================================
+# LLM Configuration (for LiteLLM backend)
+# ============================================================================
+LLM_MODEL = os.getenv("LLM_MODEL", "groq/llama-3.3-70b-versatile")
+
+# ============================================================================
+# Cisco CIRCUIT API Configuration (for circuit backend)
+# ============================================================================
+# Get credentials from CIRCUIT API Portal (VPN required)
+# Free tier: gpt-4o-mini (30 req/min) or gpt-4.1 (15 req/min)
+CIRCUIT_CLIENT_ID = os.getenv("CIRCUIT_CLIENT_ID", "")
+CIRCUIT_CLIENT_SECRET = os.getenv("CIRCUIT_CLIENT_SECRET", "")
+CIRCUIT_APPKEY = os.getenv("CIRCUIT_APPKEY", "")
+CIRCUIT_MODEL = os.getenv("CIRCUIT_MODEL", "gpt-4o-mini")
+
+# ============================================================================
 # AGNTCY Transport Configuration
 # ============================================================================
 DEFAULT_MESSAGE_TRANSPORT = os.getenv("DEFAULT_MESSAGE_TRANSPORT", "SLIM")
 TRANSPORT_SERVER_ENDPOINT = os.getenv("TRANSPORT_SERVER_ENDPOINT", "http://localhost:46357")
-
-# ============================================================================
-# LLM Configuration
-# ============================================================================
-LLM_MODEL = os.getenv("LLM_MODEL", "groq/llama-3.3-70b-versatile")
-
-# OAuth2 OpenAI Provider (if using custom endpoint)
-OAUTH2_CLIENT_ID = os.getenv("OAUTH2_CLIENT_ID", "")
-OAUTH2_CLIENT_SECRET = os.getenv("OAUTH2_CLIENT_SECRET", "")
-OAUTH2_TOKEN_URL = os.getenv("OAUTH2_TOKEN_URL", "")
-OAUTH2_BASE_URL = os.getenv("OAUTH2_BASE_URL", "")
-OAUTH2_APPKEY = os.getenv("OAUTH2_APPKEY", "")
 
 # ============================================================================
 # Webex Configuration
@@ -32,19 +41,13 @@ WEBEX_BOT_TOKEN = os.getenv("WEBEX_BOT_TOKEN", "")
 WEBEX_BOT_EMAIL = os.getenv("WEBEX_BOT_EMAIL", "")
 WEBEX_WEBHOOK_URL = os.getenv("WEBEX_WEBHOOK_URL", "http://localhost:8000/webhooks/webex")
 WEBEX_ROOM_ID = os.getenv("WEBEX_ROOM_ID", "")  # For testing
+BOT_QUEUE_NAME = os.getenv("BOT_QUEUE_NAME", "")  # For Bot Gateway
 
 # ============================================================================
 # Observability Configuration
 # ============================================================================
 OTLP_HTTP_ENDPOINT = os.getenv("OTLP_HTTP_ENDPOINT", "http://localhost:4318")
 LOGGING_LEVEL = os.getenv("LOGGING_LEVEL", "INFO").upper()
-
-# ============================================================================
-# Identity & Security Configuration (Optional for hackathon)
-# ============================================================================
-IDENTITY_AUTH_ENABLED = os.getenv("IDENTITY_AUTH_ENABLED", "false").lower() in ("true", "1", "yes")
-IDENTITY_API_KEY = os.getenv("IDENTITY_API_KEY", "")
-IDENTITY_API_SERVER_URL = os.getenv("IDENTITY_API_SERVER_URL", "https://api.agent-identity.outshift.com")
 
 # ============================================================================
 # AgentSwarm Specific Configuration
@@ -57,5 +60,3 @@ ESCALATION_AGENT_PORT = int(os.getenv("ESCALATION_AGENT_PORT", "8004"))
 
 # Enable HTTP for local development
 ENABLE_HTTP = os.getenv("ENABLE_HTTP", "true").lower() in ("true", "1", "yes")
-
-

@@ -46,12 +46,23 @@ class PromptRequest(BaseModel):
 @app.post("/agent/prompt")
 async def handle_prompt(request: PromptRequest):
     """Process customer query through multi-agent orchestrator."""
+    import json
+    import time as _time
+    # #region agent log
+    with open(r'c:\code\coffeeAgentify\.cursor\debug.log', 'a') as f: f.write(json.dumps({"hypothesisId":"H5","location":"main.py:handle_prompt:entry","message":"Orchestrator HTTP request received","data":{"prompt":request.prompt[:50]},"timestamp":int(_time.time()*1000),"sessionId":"debug-session"})+'\n')
+    # #endregion
     try:
         logger.info(f"Received: {request.prompt[:50]}...")
         result = await orchestrator.run(request.prompt)
+        # #region agent log
+        with open(r'c:\code\coffeeAgentify\.cursor\debug.log', 'a') as f: f.write(json.dumps({"hypothesisId":"H5","location":"main.py:handle_prompt:success","message":"Orchestrator returning response","data":{"result_len":len(result) if result else 0,"result_preview":result[:100] if result else None},"timestamp":int(_time.time()*1000),"sessionId":"debug-session"})+'\n')
+        # #endregion
         return {"response": result}
     except Exception as e:
         logger.error(f"Error: {e}", exc_info=True)
+        # #region agent log
+        with open(r'c:\code\coffeeAgentify\.cursor\debug.log', 'a') as f: f.write(json.dumps({"hypothesisId":"H5","location":"main.py:handle_prompt:exception","message":"Orchestrator exception","data":{"error":str(e),"error_type":type(e).__name__},"timestamp":int(_time.time()*1000),"sessionId":"debug-session"})+'\n')
+        # #endregion
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/health")
