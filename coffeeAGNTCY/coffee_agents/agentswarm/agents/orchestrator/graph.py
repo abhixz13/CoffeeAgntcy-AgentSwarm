@@ -1,11 +1,13 @@
 # Copyright AGNTCY Contributors (https://github.com/agntcy)
 # SPDX-License-Identifier: Apache-2.0
 # AgentSwarm - Orchestrator with Multi-Agent Collaboration (Enhanced Demo)
+# OBSERVABILITY FOCUS: Distributed Tracing, Metrics, Span Context
 
 import logging
 import json
 import time
 import asyncio
+import uuid
 from datetime import datetime
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.prompts import PromptTemplate
@@ -14,6 +16,16 @@ from langgraph.graph import StateGraph, END
 from agents.orchestrator.models import OrchestratorState, NodeNames, IntentType
 from agents.orchestrator.http_client import get_http_client
 from common.llm import get_llm
+
+# OBSERVABILITY IMPORTS
+from common.observability import (
+    get_trace_store,
+    get_metrics_collector,
+    format_trace_for_display,
+    TraceContext,
+    OTEL_AVAILABLE,
+    IOA_AVAILABLE
+)
 
 logger = logging.getLogger("agentswarm.orchestrator.graph")
 
@@ -379,17 +391,49 @@ Unified Response:""",
     async def run(self, prompt: str) -> str:
         """Main entry point: Process customer query with multi-agent collaboration."""
         logger.info(f"Orchestrator processing: {prompt[:100]}...")
+        
+        # =====================================================================
+        # OBSERVABILITY: Create distributed trace for this request
+        # =====================================================================
+        trace_store = get_trace_store()
+        metrics = get_metrics_collector()
+        trace_ctx = await trace_store.create_trace(prompt)
+        
+        logger.info(f"[TRACE] Started trace_id={trace_ctx.trace_id}")
+        metrics.record_request()
+        
         # #region agent log
-        with open(r'c:\code\coffeeAgentify\.cursor\debug.log', 'a') as f: f.write(json.dumps({"hypothesisId":"H5","location":"graph.py:run:start","message":"Orchestrator starting","data":{"prompt":prompt[:100]},"timestamp":int(time.time()*1000),"sessionId":"debug-session"})+'\n')
+        with open(r'c:\code\coffeeAgentify\.cursor\debug.log', 'a') as f: f.write(json.dumps({"hypothesisId":"H5","location":"graph.py:run:start","message":"Orchestrator starting","data":{"prompt":prompt[:100],"trace_id":trace_ctx.trace_id},"timestamp":int(time.time()*1000),"sessionId":"debug-session"})+'\n')
         # #endregion
         
         initial_state = {
-            "messages": [HumanMessage(content=prompt)]
+            "messages": [HumanMessage(content=prompt)],
+            "trace_id": trace_ctx.trace_id  # Pass trace context through graph
         }
         
         result = await self.graph.ainvoke(initial_state)
         final_response = result.get("final_response", "Sorry, I encountered an issue.")
+        
+        # =====================================================================
+        # OBSERVABILITY: Record agent calls from execution trace
+        # =====================================================================
+        execution_trace = result.get("execution_trace", [])
+        for trace_entry in execution_trace:
+            trace_ctx.add_agent_call(
+                agent=trace_entry.get("agent", "unknown"),
+                duration_ms=trace_entry.get("duration", 0) * 1000,
+                status="OK",
+                tokens=0
+            )
+            metrics.record_agent_call(
+                trace_entry.get("agent", "unknown"),
+                trace_entry.get("duration", 0) * 1000
+            )
+        
         # #region agent log
-        with open(r'c:\code\coffeeAgentify\.cursor\debug.log', 'a') as f: f.write(json.dumps({"hypothesisId":"H5","location":"graph.py:run:end","message":"Orchestrator finished","data":{"has_response":bool(final_response),"response_len":len(final_response) if final_response else 0},"timestamp":int(time.time()*1000),"sessionId":"debug-session"})+'\n')
+        with open(r'c:\code\coffeeAgentify\.cursor\debug.log', 'a') as f: f.write(json.dumps({"hypothesisId":"H5","location":"graph.py:run:end","message":"Orchestrator finished","data":{"has_response":bool(final_response),"response_len":len(final_response) if final_response else 0,"trace_id":trace_ctx.trace_id,"agents_called":len(execution_trace)},"timestamp":int(time.time()*1000),"sessionId":"debug-session"})+'\n')
         # #endregion
+        
+        logger.info(f"[TRACE] Completed trace_id={trace_ctx.trace_id}, agents={len(execution_trace)}")
+        
         return final_response
