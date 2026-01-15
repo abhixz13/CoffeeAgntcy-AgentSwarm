@@ -1,0 +1,73 @@
+# OpenTelemetry Collector Configuration for AgentSwarm
+# Receives traces and metrics from agents, exports to Jaeger and Prometheus
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: "0.0.0.0:4317"
+      http:
+        endpoint: "0.0.0.0:4318"
+        cors:
+          allowed_origins:
+            - "http://localhost:*"
+            - "http://127.0.0.1:*"
+
+processors:
+  batch:
+    timeout: 1s
+    send_batch_size: 1024
+  
+  # Add resource attributes
+  resource:
+    attributes:
+      - key: service.namespace
+        value: agentswarm
+        action: upsert
+      - key: deployment.environment
+        value: demo
+        action: upsert
+
+  # Memory limiter to prevent OOM
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512
+    spike_limit_mib: 128
+
+exporters:
+  # Export traces to Jaeger
+  otlp/jaeger:
+    endpoint: "jaeger:4317"
+    tls:
+      insecure: true
+
+  # Export metrics to Prometheus
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    namespace: agentswarm
+    const_labels:
+      environment: demo
+
+  # Debug logging (for demo visibility)
+  debug:
+    verbosity: detailed
+    sampling_initial: 5
+    sampling_thereafter: 200
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, resource]
+      exporters: [otlp/jaeger, debug]
+    
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, resource]
+      exporters: [prometheus, debug]
+
+  telemetry:
+    logs:
+      level: info
+    metrics:
+      address: ":8888"

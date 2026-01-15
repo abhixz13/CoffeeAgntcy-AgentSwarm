@@ -127,30 +127,46 @@ Live visualization at `http://localhost:8080`:
 
 ## 🚀 Running the Observability Demo
 
-### Step 1: Start All Services
+### Option A: Full Docker Stack (Recommended for Demo)
+
+This gives you **Jaeger + Grafana + Prometheus** - enterprise-grade observability!
+
+```bash
+# Step 1: Start Docker observability stack
+cd coffeeAGNTCY/coffee_agents/agentswarm
+start_observability_stack.bat
+
+# Step 2: Add to your .env file
+OTLP_HTTP_ENDPOINT=http://localhost:4318
+
+# Step 3: Start all agents
+start_demo.bat
+```
+
+**Dashboards:**
+| Service | URL | Credentials |
+|---------|-----|-------------|
+| **Jaeger** (Traces) | http://localhost:16686 | None |
+| **Grafana** (Metrics) | http://localhost:3001 | admin/admin |
+| **Prometheus** | http://localhost:9090 | None |
+
+### Option B: Lightweight (No Docker)
+
+Uses the built-in Python dashboard:
 
 ```bash
 # Terminal 1: Start all agents
 cd coffeeAGNTCY/coffee_agents/agentswarm
 start_demo.bat
 
-# Terminal 2: Start observability dashboard
-python observability_dashboard.py
+# Say "Y" when asked to start dashboard
 ```
 
-### Step 2: Open Dashboard
-
-Open browser to: **http://localhost:8080**
-
-You'll see:
-- Real-time metrics cards
-- Agent health indicators
-- Live trace list
-- Waterfall visualizations
+**Dashboard:** http://localhost:8080
 
 ### Step 3: Send Test Queries
 
-Send queries via Webex bot and watch the dashboard update in real-time!
+Send queries via Webex bot and watch the dashboards update in real-time!
 
 **Demo Query 1 (2 agents):**
 ```
@@ -221,13 +237,64 @@ Demonstrate:
 
 ---
 
+## 🐳 Docker Observability Stack
+
+### What's Included
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                 DOCKER OBSERVABILITY STACK                   │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ┌─────────────────┐         ┌─────────────────┐           │
+│  │  AgentSwarm     │  OTLP   │  OTEL Collector │           │
+│  │  (Your Agents)  │────────▶│  :4317/:4318    │           │
+│  └─────────────────┘         └────────┬────────┘           │
+│                                       │                     │
+│                    ┌──────────────────┼──────────────────┐ │
+│                    │                  │                  │ │
+│                    ▼                  ▼                  ▼ │
+│           ┌────────────┐      ┌────────────┐     ┌──────┐ │
+│           │   Jaeger   │      │ Prometheus │     │Grafana│ │
+│           │   :16686   │      │   :9090    │     │ :3001 │ │
+│           └────────────┘      └────────────┘     └──────┘ │
+│                                                            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Quick Start
+
+```bash
+# Start the stack
+start_observability_stack.bat
+
+# Stop the stack
+stop_observability_stack.bat
+```
+
+### Jaeger Features (Trace Visualization)
+
+- **Service Map** - See how agents connect
+- **Trace Timeline** - Waterfall view of each request
+- **Span Details** - Drill into individual operations
+- **Compare Traces** - Side-by-side comparison
+
+### Grafana Features (Metrics Dashboard)
+
+Pre-configured dashboard includes:
+- Total requests counter
+- Agent call counts
+- Latency by agent type
+- LLM token consumption
+- Error rates
+
 ## 🔌 Integration with Production Systems
 
-### Export to Jaeger/Grafana
+### Export to Jaeger/Grafana (Docker)
 
 ```bash
 # Set OTLP endpoint in .env
-OTLP_HTTP_ENDPOINT=http://jaeger:4318
+OTLP_HTTP_ENDPOINT=http://localhost:4318
 ```
 
 ### Export to Datadog

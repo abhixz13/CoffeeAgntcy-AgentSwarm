@@ -241,51 +241,80 @@ _tracer: Optional[Any] = None
 _meter: Optional[Any] = None
 
 def setup_opentelemetry(service_name: str = "agentswarm"):
-    """Initialize OpenTelemetry tracing and metrics."""
+    """
+    Initialize OpenTelemetry tracing and metrics.
+    
+    Exports to:
+    - Console (always, for demo visibility)
+    - OTLP endpoint (if OTLP_HTTP_ENDPOINT is set - for Jaeger/Grafana)
+    
+    Set OTLP_HTTP_ENDPOINT=http://localhost:4318 to export to Docker stack.
+    """
     global _tracer, _meter
     
     if not OTEL_AVAILABLE:
         logger.warning("OpenTelemetry not available - using local tracing only")
         return
     
-    # Create resource
+    # Create resource with service info
     resource = Resource.create({
         SERVICE_NAME: service_name,
         "service.version": "1.0.0",
+        "service.namespace": "agentswarm",
         "deployment.environment": "hackathon-demo"
     })
     
     # Setup tracer
     tracer_provider = TracerProvider(resource=resource)
     
-    # Add console exporter for demo visibility
+    # Add console exporter for demo visibility (always enabled)
     console_exporter = ConsoleSpanExporter()
     tracer_provider.add_span_processor(BatchSpanProcessor(console_exporter))
     
-    # Check for OTLP endpoint
-    otlp_endpoint = os.getenv("OTLP_HTTP_ENDPOINT")
-    if otlp_endpoint:
-        try:
-            from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
-            otlp_exporter = OTLPSpanExporter(endpoint=f"{otlp_endpoint}/v1/traces")
-            tracer_provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
-            logger.info(f"OTLP trace exporter configured: {otlp_endpoint}")
-        except ImportError:
-            logger.warning("OTLP exporter not available")
+    # Check for OTLP endpoint (Docker observability stack)
+    otlp_endpoint = os.getenv("OTLP_HTTP_ENDPOINT", "http://localhost:4318")
+    
+    try:
+        from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+        from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
+        
+        # OTLP Trace Exporter -> Jaeger
+        otlp_trace_exporter = OTLPSpanExporter(endpoint=f"{otlp_endpoint}/v1/traces")
+        tracer_provider.add_span_processor(BatchSpanProcessor(otlp_trace_exporter))
+        logger.info(f"[OTEL] Trace exporter configured: {otlp_endpoint}/v1/traces")
+        
+        # OTLP Metrics Exporter -> Prometheus via OTEL Collector
+        otlp_metric_exporter = OTLPMetricExporter(endpoint=f"{otlp_endpoint}/v1/metrics")
+        metric_reader = PeriodicExportingMetricReader(
+            otlp_metric_exporter,
+            export_interval_millis=10000  # Export every 10 seconds
+        )
+        logger.info(f"[OTEL] Metrics exporter configured: {otlp_endpoint}/v1/metrics")
+        
+    except ImportError:
+        logger.warning("[OTEL] OTLP exporters not available - using console only")
+        metric_reader = PeriodicExportingMetricReader(
+            ConsoleMetricExporter(),
+            export_interval_millis=60000
+        )
+    except Exception as e:
+        logger.warning(f"[OTEL] Could not configure OTLP exporters: {e}")
+        metric_reader = PeriodicExportingMetricReader(
+            ConsoleMetricExporter(),
+            export_interval_millis=60000
+        )
     
     trace.set_tracer_provider(tracer_provider)
     _tracer = trace.get_tracer(__name__)
     
     # Setup metrics
-    metric_reader = PeriodicExportingMetricReader(
-        ConsoleMetricExporter(),
-        export_interval_millis=60000
-    )
     meter_provider = MeterProvider(resource=resource, metric_readers=[metric_reader])
     metrics.set_meter_provider(meter_provider)
     _meter = metrics.get_meter(__name__)
     
-    logger.info(f"OpenTelemetry initialized for {service_name}")
+    logger.info(f"[OTEL] OpenTelemetry initialized for {service_name}")
+    logger.info(f"[OTEL] View traces at: http://localhost:16686 (Jaeger)")
+    logger.info(f"[OTEL] View metrics at: http://localhost:3001 (Grafana)")
 
 
 def get_tracer():
