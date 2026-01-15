@@ -36,6 +36,7 @@ agents/ticket/
 ```
 agents/escalation/
 ├── card.py              ✅
+├── agent.py             ✅
 ├── agent_executor.py    ✅
 └── server.py            ✅
 ```

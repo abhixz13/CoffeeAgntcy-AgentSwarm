@@ -146,7 +146,7 @@ Bot: I found your account (Order #12345). Based on your plan...
 ```
 You: URGENT: Complete system outage!
 Bot: This has been flagged as CRITICAL.
-     Ticket #URG-2024-001 created with P1 priority.
+     Ticket #URG-2026-001 created with P1 priority.
      A human agent will contact you within 5 minutes...
 ```
 
