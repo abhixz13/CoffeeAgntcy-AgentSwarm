@@ -4,22 +4,24 @@
   },
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "graphTooltip": 0,
+  "graphTooltip": 1,
   "id": null,
   "links": [],
-  "liveNow": false,
+  "liveNow": true,
   "panels": [
     {
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Total requests processed by AgentSwarm",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "thresholds"
           },
           "mappings": [],
+          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -55,7 +57,14 @@
       "pluginVersion": "10.2.3",
       "targets": [
         {
-          "expr": "sum(agentswarm_requests_total)",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "sum(agentswarm_requests_total) or vector(0)",
+          "legendFormat": "__auto",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -67,17 +76,19 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Total agent invocations across all agent types",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "thresholds"
           },
           "mappings": [],
+          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "blue",
                 "value": null
               }
             ]
@@ -108,7 +119,14 @@
       "pluginVersion": "10.2.3",
       "targets": [
         {
-          "expr": "sum(agentswarm_agent_duration_count)",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "sum(agentswarm_agent_duration_count) or vector(0)",
+          "legendFormat": "__auto",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -120,12 +138,14 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Average latency across all agent calls",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "thresholds"
           },
           "mappings": [],
+          "noValue": "N/A",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -169,7 +189,14 @@
       "pluginVersion": "10.2.3",
       "targets": [
         {
-          "expr": "avg(agentswarm_agent_duration_sum / agentswarm_agent_duration_count)",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(agentswarm_agent_duration_sum[5m])) / sum(rate(agentswarm_agent_duration_count[5m]))",
+          "legendFormat": "__auto",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -181,17 +208,19 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Total LLM tokens consumed (input + output)",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "thresholds"
           },
           "mappings": [],
+          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "purple",
                 "value": null
               }
             ]
@@ -222,7 +251,14 @@
       "pluginVersion": "10.2.3",
       "targets": [
         {
-          "expr": "sum(agentswarm_llm_tokens_total)",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "sum(agentswarm_llm_tokens_total) or vector(0)",
+          "legendFormat": "__auto",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -234,12 +270,14 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Latency breakdown by agent type over time",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
@@ -261,7 +299,7 @@
               "type": "linear"
             },
             "showPoints": "auto",
-            "spanNulls": false,
+            "spanNulls": true,
             "stacking": {
               "group": "A",
               "mode": "none"
@@ -306,8 +344,14 @@
       "pluginVersion": "10.2.3",
       "targets": [
         {
-          "expr": "agentswarm_agent_duration_sum / agentswarm_agent_duration_count",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "rate(agentswarm_agent_duration_sum[1m]) / rate(agentswarm_agent_duration_count[1m])",
           "legendFormat": "{{agent}}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -319,12 +363,14 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Agent call rate over time",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
@@ -346,7 +392,7 @@
               "type": "linear"
             },
             "showPoints": "never",
-            "spanNulls": false,
+            "spanNulls": true,
             "stacking": {
               "group": "A",
               "mode": "normal"
@@ -391,8 +437,14 @@
       "pluginVersion": "10.2.3",
       "targets": [
         {
-          "expr": "increase(agentswarm_agent_duration_count[1m])",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "rate(agentswarm_agent_duration_count[1m]) * 60",
           "legendFormat": "{{agent}}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -401,14 +453,177 @@
     },
     {
       "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Verify data pipeline is working - shows OTEL collector health",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "DOWN"
+                },
+                "1": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "UP"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "noValue": "NO DATA",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 12
+      },
+      "id": 8,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.2.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "up{job=\"otel-collector\"}",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "OTEL Collector Status",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Shows all metrics available from AgentSwarm - useful for debugging",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "__name__"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 300
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 18,
+        "x": 6,
+        "y": 12
+      },
+      "id": 9,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": ["sum"],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "10.2.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "count({__name__=~\"agentswarm.*\"}) by (__name__)",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Available AgentSwarm Metrics (Debug)",
+      "type": "table"
+    },
+    {
+      "datasource": {
         "type": "jaeger",
         "uid": "jaeger"
       },
+      "description": "Click on a trace to see full distributed trace details",
       "gridPos": {
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 12
+        "y": 16
       },
       "id": 7,
       "options": {
@@ -416,7 +631,7 @@
         "service": "agentswarm"
       },
       "pluginVersion": "10.2.3",
-      "title": "Recent Traces (Click to Explore)",
+      "title": "Recent Traces (Click to Explore in Jaeger)",
       "type": "traces"
     }
   ],
@@ -434,6 +649,6 @@
   "timezone": "",
   "title": "AgentSwarm Overview",
   "uid": "agentswarm-overview",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }

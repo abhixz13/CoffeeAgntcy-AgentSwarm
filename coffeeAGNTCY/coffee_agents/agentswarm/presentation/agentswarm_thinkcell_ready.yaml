@@ -1,0 +1,296 @@
+---
+# AgentSwarm - Multi-Agent AI System for Webex Contact Center
+# THINK-CELL READY VERSION
+# After generating, enhance tables/charts with think-cell
+
+metadata:
+  title: "AgentSwarm: Multi-Agent AI for Webex Contact Center"
+  author: "Raghu Guvvala"
+  session_id: "PLAY-2026"
+  date: "January 2026"
+  event: "Cisco PlayTime Hackathon 2026"
+  confidential: false
+
+slides:
+  # ============================================================================
+  # TITLE SLIDE - Layout 3 has gradient effect
+  # ============================================================================
+
+  - type: title
+    title: "AgentSwarm"
+    subtitle: "Multi-Agent AI System for Webex Contact Center"
+    properties:
+      layout_variant: layout_3
+    speakers: 2
+    authors:
+      - name: "Raghu Guvvala"
+        title: "Cisco PlayTime Hackathon 2026"
+      - name: "Powered by AGNTCY"
+        title: "Cisco Outshift Framework"
+
+  # ============================================================================
+  # AGENDA - Clean numbered list
+  # ============================================================================
+
+  - type: agenda
+    title: "Agenda"
+    agenda_items:
+      - number: "01"
+        text: "The Problem"
+      - number: "02"
+        text: "The Solution"
+      - number: "03"
+        text: "Key Technologies"
+      - number: "04"
+        text: "Live Demo"
+      - number: "05"
+        text: "Business Impact"
+
+  # ============================================================================
+  # SECTION 1: THE PROBLEM
+  # ============================================================================
+
+  - type: divider
+    title: "The Problem"
+    properties:
+      layout_variant: segue_3
+
+  - type: statement
+    title: "Contact Center Challenge"
+    statement: "Traditional AI chatbots lack specialization and cannot collaborate across systems"
+
+  - type: content
+    title: "Why Traditional Chatbots Fail"
+    properties:
+      columns: 2
+      layout_style: standard
+    content:
+      - heading: "Single-Agent Limitations"
+        bullets:
+          - "One model tries to do everything"
+          - "No domain expertise"
+          - "Cannot reason across systems"
+          - "Black box decisions"
+      - heading: "Customer Pain Points"
+        bullets:
+          - "Long wait times (10+ min)"
+          - "Repeated transfers"
+          - "Lost context"
+          - "No audit trail"
+
+  # ============================================================================
+  # SECTION 2: THE SOLUTION
+  # ============================================================================
+
+  - type: divider
+    title: "The Solution"
+    properties:
+      layout_variant: segue_3
+
+  - type: statement
+    title: "AgentSwarm"
+    statement: "A collaborative team of AI specialists working together like a real contact center"
+
+  # THINK-CELL: Replace this with a process flow diagram
+  - type: content
+    title: "Multi-Agent Architecture"
+    subtitle: "THINK-CELL: Replace with Process Flow"
+    content:
+      - heading: "Agent Workflow"
+        bullets:
+          - "1. USER QUERY arrives"
+          - "2. SUPERVISOR analyzes intent"
+          - "3. Routes to SPECIALIST AGENTS"
+          - "4. CRM + Knowledge + Ticket + Escalation"
+          - "5. AGGREGATOR synthesizes response"
+          - "6. UNIFIED RESPONSE returned"
+
+  - type: content
+    title: "Four Specialist Agents"
+    properties:
+      columns: 4
+      layout_style: standard
+    content:
+      - heading: "CRM"
+        bullets:
+          - "Customer lookup"
+          - "Account history"
+          - "Subscription tier"
+      - heading: "Knowledge"
+        bullets:
+          - "FAQs"
+          - "Documentation"
+          - "Troubleshooting"
+      - heading: "Ticket"
+        bullets:
+          - "Case creation"
+          - "Priority setting"
+          - "Status tracking"
+      - heading: "Escalation"
+        bullets:
+          - "Urgency routing"
+          - "Team assignment"
+          - "SLA management"
+
+  # ============================================================================
+  # SECTION 3: KEY TECHNOLOGIES
+  # ============================================================================
+
+  - type: divider
+    title: "Key Technologies"
+    properties:
+      layout_variant: segue_3
+
+  - type: content
+    title: "AGNTCY Framework"
+    properties:
+      columns: 2
+      layout_style: standard
+    content:
+      - heading: "A2A Protocol"
+        bullets:
+          - "Agent-to-Agent standard"
+          - "AgentCard manifests"
+          - "Standardized messages"
+          - "Vendor-agnostic"
+      - heading: "Observability SDK"
+        bullets:
+          - "Distributed tracing"
+          - "OpenTelemetry"
+          - "Jaeger visualization"
+          - "Session management"
+
+  - type: content
+    title: "LangGraph State Machine"
+    properties:
+      columns: 2
+      layout_style: boxes
+    content:
+      - heading: "Traditional If/Else"
+        bullets:
+          - "Rigid keyword matching"
+          - "Cannot handle nuance"
+          - "Fails on new patterns"
+          - "Not explainable"
+      - heading: "LangGraph + LLM"
+        bullets:
+          - "Understands intent"
+          - "Handles synonyms"
+          - "Adapts dynamically"
+          - "Fully explainable"
+
+  # THINK-CELL: Replace this table with a think-cell table
+  - type: content
+    title: "Technology Stack"
+    subtitle: "THINK-CELL: Enhance this table"
+    content:
+      - table:
+          headers: ["Component", "Technology", "Purpose"]
+          rows:
+            - ["LLM", "Cisco CIRCUIT", "NLU"]
+            - ["Orchestration", "LangGraph", "Workflows"]
+            - ["Protocol", "A2A SDK", "Communication"]
+            - ["Tracing", "OpenTelemetry", "Observability"]
+            - ["Metrics", "Prometheus", "Dashboards"]
+            - ["Interface", "Webex Bot", "Integration"]
+
+  # ============================================================================
+  # SECTION 4: OBSERVABILITY
+  # ============================================================================
+
+  - type: divider
+    title: "Observability"
+    properties:
+      layout_variant: segue_3
+
+  - type: icon_boxes
+    section_title: "Enterprise Monitoring"
+    title: "Full Stack Observability"
+    properties:
+      variant: gradient_background
+    boxes:
+      - text: "Jaeger Traces"
+        emoji: "J"
+      - text: "Prometheus Metrics"
+        emoji: "P"
+      - text: "Grafana Dashboards"
+        emoji: "G"
+
+  - type: content
+    title: "What Observability Shows"
+    content:
+      - heading: "Full Request Lifecycle"
+        bullets:
+          - "Which agents were consulted"
+          - "How long each agent took"
+          - "Data passed between agents"
+          - "Where bottlenecks occur"
+          - "Error tracking and debugging"
+
+  - type: statement
+    title: "Live Demo"
+    statement: "AgentSwarm in action with Webex Teams and Jaeger tracing"
+
+  # ============================================================================
+  # SECTION 5: BUSINESS IMPACT
+  # ============================================================================
+
+  - type: divider
+    title: "Business Impact"
+    properties:
+      layout_variant: segue_3
+
+  - type: content
+    title: "Measurable Benefits"
+    properties:
+      columns: 2
+      layout_style: standard
+    content:
+      - heading: "Faster Resolution"
+        bullets:
+          - "80% reduction in response time"
+          - "Automated ticket creation"
+          - "Intelligent escalation"
+      - heading: "Cost Savings"
+        bullets:
+          - "Fewer agent transfers"
+          - "24/7 availability"
+          - "Reduced training costs"
+
+  # THINK-CELL: Replace with a think-cell table
+  - type: content
+    title: "Use Cases Demonstrated"
+    subtitle: "THINK-CELL: Enhance this table"
+    content:
+      - table:
+          headers: ["Scenario", "Agents", "Outcome"]
+          rows:
+            - ["Password Reset", "KB + CRM", "Self-service"]
+            - ["Billing Inquiry", "CRM + KB + Ticket", "Full context"]
+            - ["System Outage", "All 4 Agents", "Critical escalation"]
+            - ["VIP Support", "CRM + Ticket + ESC", "Priority routing"]
+
+  # ============================================================================
+  # SUMMARY
+  # ============================================================================
+
+  - type: content
+    title: "Key Takeaways"
+    content:
+      - heading: "What Makes AgentSwarm Different"
+        bullets:
+          - "Multi-agent collaboration"
+          - "LangGraph intelligent routing"
+          - "A2A protocol standard"
+          - "Enterprise observability"
+          - "Production-ready architecture"
+
+  - type: quote
+    quote: "AI agents collaborating like a real team, with full transparency through observability"
+    attribution: "Cisco PlayTime Hackathon 2026"
+    properties:
+      layout_variant: layout_1
+
+  - type: closing
+    title: "Thank You"
+    subtitle: "Questions?"

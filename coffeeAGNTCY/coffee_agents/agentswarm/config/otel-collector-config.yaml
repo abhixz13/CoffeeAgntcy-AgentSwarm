@@ -42,9 +42,9 @@ exporters:
       insecure: true
 
   # Export metrics to Prometheus
+  # NOTE: No namespace here - metrics from Python already have 'agentswarm' prefix
   prometheus:
     endpoint: "0.0.0.0:8889"
-    namespace: agentswarm
     const_labels:
       environment: demo
 
