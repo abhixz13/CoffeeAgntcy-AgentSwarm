@@ -236,7 +236,7 @@ agentswarm/
 ```bash
 # LLM Configuration
 LLM_MODEL=openai/gpt-4o-mini
-OPENAI_API_KEY=sk-...
+OPENAI_API_KEY=your_openai_api_key_here
 
 # Agent Ports
 ORCHESTRATOR_PORT=8000
