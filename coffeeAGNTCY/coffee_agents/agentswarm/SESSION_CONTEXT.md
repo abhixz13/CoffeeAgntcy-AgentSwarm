@@ -60,14 +60,14 @@ CIRCUIT_MODEL=gpt-4o-mini
 ```bash
 AI_BACKEND=litellm
 LLM_MODEL=openai/gpt-4o-mini
-OPENAI_API_KEY=sk-proj-...
+OPENAI_API_KEY=your_openai_api_key_here
 ```
 
 ### Option 3: GROQ (Free, Fast)
 ```bash
 AI_BACKEND=litellm
 LLM_MODEL=groq/llama-3.3-70b-versatile
-GROQ_API_KEY=gsk_...
+GROQ_API_KEY=your_groq_api_key_here
 ```
 
 ---
